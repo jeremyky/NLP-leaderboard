@@ -545,6 +545,35 @@ async def import_from_huggingface(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==================== Metrics Information ====================
+
+@app.get("/api/metrics")
+async def get_all_metrics():
+    """Get information about all available metrics"""
+    from metrics_info import METRICS_CATALOG
+    return METRICS_CATALOG
+
+
+@app.get("/api/metrics/{metric_name}")
+async def get_metric_info(metric_name: str):
+    """Get detailed information about a specific metric"""
+    from metrics_info import get_metric_info as get_info
+    info = get_info(metric_name)
+    if not info.get("description"):
+        raise HTTPException(status_code=404, detail="Metric not found")
+    return info
+
+
+@app.get("/api/metrics/task/{task_type}")
+async def get_task_metrics(task_type: str):
+    """Get all relevant metrics for a specific task type"""
+    from metrics_info import get_metrics_for_task, get_metric_info as get_info
+    
+    metric_names = get_metrics_for_task(task_type)
+    metrics = {name: get_info(name) for name in metric_names}
+    return metrics
+
+
 # ==================== Health Check ====================
 
 @app.get("/health")

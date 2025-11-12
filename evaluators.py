@@ -84,11 +84,26 @@ class TextClassificationEvaluator(BaseEvaluator):
         f1 = (2 * macro_precision * macro_recall / (macro_precision + macro_recall) 
               if (macro_precision + macro_recall) > 0 else 0)
         
+        # Compute micro-averaged metrics as well
+        total_tp = sum(class_correct.values())
+        total_fp = sum(class_pred_total.values()) - total_tp
+        total_fn = total - total_tp
+        
+        micro_precision = total_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0
+        micro_recall = total_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 0
+        micro_f1 = (2 * micro_precision * micro_recall / (micro_precision + micro_recall)
+                   if (micro_precision + micro_recall) > 0 else 0)
+        
         return {
             "accuracy": round(accuracy, 4),
             "precision": round(macro_precision, 4),
             "recall": round(macro_recall, 4),
-            "f1": round(f1, 4)
+            "f1": round(f1, 4),
+            "micro_precision": round(micro_precision, 4),
+            "micro_recall": round(micro_recall, 4),
+            "micro_f1": round(micro_f1, 4),
+            "num_classes": len(all_classes),
+            "total_predictions": total
         }
 
 
@@ -129,7 +144,10 @@ class NEREvaluator(BaseEvaluator):
         return {
             "precision": round(precision, 4),
             "recall": round(recall, 4),
-            "f1": round(f1, 4)
+            "f1": round(f1, 4),
+            "true_positives": total_tp,
+            "false_positives": total_fp,
+            "false_negatives": total_fn
         }
 
 
@@ -197,9 +215,15 @@ class QAEvaluator(BaseEvaluator):
             exact_matches.append(em)
             f1_scores.append(f1)
         
+        avg_em = sum(exact_matches) / len(exact_matches) if exact_matches else 0.0
+        avg_f1 = sum(f1_scores) / len(f1_scores) if f1_scores else 0.0
+        
         return {
-            "exact_match": round(sum(exact_matches) / len(exact_matches), 4) if exact_matches else 0.0,
-            "f1": round(sum(f1_scores) / len(f1_scores), 4) if f1_scores else 0.0
+            "exact_match": round(avg_em, 4),
+            "f1": round(avg_f1, 4),
+            "token_f1": round(avg_f1, 4),  # Alias for clarity
+            "total_questions": len(exact_matches),
+            "exact_matches_count": sum(exact_matches)
         }
 
 
@@ -236,7 +260,10 @@ class RetrievalEvaluator(BaseEvaluator):
         accuracy = correct / total if total > 0 else 0.0
         
         return {
-            "retrieval_accuracy": round(accuracy, 4)
+            "retrieval_accuracy": round(accuracy, 4),
+            "correct_retrievals": correct,
+            "total_queries": total,
+            "failed_retrievals": total - correct
         }
 
 

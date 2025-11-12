@@ -1,15 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
+import MetricInfoModal from './MetricInfoModal';
 
 const LeaderboardCard = ({ leaderboard }) => {
+  const [showMetricInfo, setShowMetricInfo] = useState(false);
+
   return (
-    <div className="w-full max-w-3xl p-4 bg-gray-950 rounded-lg shadow-lg card-hover">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h2 className="text-xl font-bold text-white">{leaderboard.dataset_name}</h2>
-          <p className="text-sm text-gray-400">
-            {leaderboard.task_type.replace('_', ' ').toUpperCase()} | Metric: {leaderboard.primary_metric}
-          </p>
-        </div>
+    <>
+      <div className="w-full max-w-3xl p-4 bg-gray-950 rounded-lg shadow-lg card-hover">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-white">{leaderboard.dataset_name}</h2>
+            <div className="flex items-center space-x-2 mt-1">
+              <p className="text-sm text-gray-400">
+                {leaderboard.task_type.replace('_', ' ').toUpperCase()}
+              </p>
+              <span className="text-gray-600">|</span>
+              <button
+                onClick={() => setShowMetricInfo(true)}
+                className="text-sm text-blue-400 hover:text-blue-300 underline cursor-pointer flex items-center space-x-1"
+                title="Click to learn about this metric"
+              >
+                <span>Metric: {leaderboard.primary_metric}</span>
+                <span className="text-xs">ℹ️</span>
+              </button>
+            </div>
+          </div>
         {leaderboard.url && (
           <a
             href={leaderboard.url}
@@ -61,6 +76,14 @@ const LeaderboardCard = ({ leaderboard }) => {
         )}
       </div>
     </div>
+
+      {/* Metric Info Modal */}
+      <MetricInfoModal
+        metricName={leaderboard.primary_metric}
+        isOpen={showMetricInfo}
+        onClose={() => setShowMetricInfo(false)}
+      />
+    </>
   );
 };
 

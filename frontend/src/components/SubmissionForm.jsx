@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getDatasets, submitPredictions, getSubmission } from '../services/api';
+import DetailedMetrics from './DetailedMetrics';
 
 const SubmissionForm = ({ onSuccess }) => {
   const [datasets, setDatasets] = useState([]);
@@ -139,14 +140,18 @@ const SubmissionForm = ({ onSuccess }) => {
               </p>
               
               {submissionStatus.status === 'completed' && (
-                <div className="space-y-1">
-                  <p>Primary Score: <span className="font-bold text-green-400">
+                <div className="space-y-2">
+                  <p>Primary Score: <span className="font-bold text-green-400 text-xl">
                     {submissionStatus.primary_score?.toFixed(4)}
                   </span></p>
                   {submissionStatus.detailed_scores && (
-                    <p className="text-sm">
-                      All Metrics: {JSON.stringify(submissionStatus.detailed_scores)}
-                    </p>
+                    <div>
+                      <p className="text-sm text-gray-400 mb-2">Detailed Metrics:</p>
+                      <DetailedMetrics 
+                        scores={submissionStatus.detailed_scores}
+                        primaryMetric={selectedDataset?.primary_metric}
+                      />
+                    </div>
                   )}
                 </div>
               )}
