@@ -403,6 +403,148 @@ async def get_dataset_leaderboard(
     )
 
 
+# ==================== Data Management ====================
+
+@app.post("/api/admin/seed-data", response_model=SuccessResponse)
+async def seed_sample_data(db: Session = Depends(get_db)):
+    """
+    Load sample datasets and baseline models
+    
+    This populates the leaderboard with popular benchmarks.
+    """
+    try:
+        from seed_data import SAMPLE_DATASETS, create_baseline_predictions
+        from datetime import datetime as dt
+        
+        datasets_added = 0
+        submissions_added = 0
+        
+        for dataset_config in SAMPLE_DATASETS:
+            # Check if dataset already exists
+            existing = db.query(Dataset).filter(Dataset.name == dataset_config["name"]).first()
+            if existing:
+                continue
+            
+            # Create dataset
+            dataset_id = str(uuid.uuid4())
+            dataset = Dataset(
+                id=dataset_id,
+                name=dataset_config["name"],
+                description=dataset_config["description"],
+                url=dataset_config["url"],
+                task_type=TaskType(dataset_config["task_type"]),
+                test_set_public=dataset_config["test_set_public"],
+                labels_public=dataset_config["labels_public"],
+                primary_metric=dataset_config["primary_metric"],
+                additional_metrics=dataset_config["additional_metrics"],
+                num_examples=len(dataset_config["ground_truth"]),
+                ground_truth=dataset_config["ground_truth"]
+            )
+            db.add(dataset)
+            db.flush()
+            datasets_added += 1
+            
+            # Create baseline submissions
+            for baseline in dataset_config.get("baseline_models", []):
+                submission_id = str(uuid.uuid4())
+                predictions = create_baseline_predictions(
+                    dataset_config["ground_truth"],
+                    baseline["score"]
+                )
+                
+                submission = Submission(
+                    id=submission_id,
+                    dataset_id=dataset_id,
+                    model_name=baseline["model"],
+                    model_version=baseline.get("version"),
+                    organization=baseline.get("organization"),
+                    predictions=predictions,
+                    status=SubmissionStatus.COMPLETED,
+                    primary_score=baseline["score"],
+                    detailed_scores={dataset_config["primary_metric"]: baseline["score"]},
+                    confidence_interval=f"{baseline['score']-0.02:.2f} - {baseline['score']+0.02:.2f}",
+                    is_internal=True,
+                    created_at=dt.now(),
+                    evaluated_at=dt.now()
+                )
+                db.add(submission)
+                submissions_added += 1
+            
+            db.commit()
+        
+        return SuccessResponse(
+            message="Sample data loaded successfully",
+            data={
+                "datasets_added": datasets_added,
+                "submissions_added": submissions_added
+            }
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/admin/import-huggingface", response_model=SuccessResponse)
+async def import_from_huggingface(
+    dataset_name: str,
+    config: str = "default",
+    split: str = "test",
+    num_samples: int = 100,
+    db: Session = Depends(get_db)
+):
+    """
+    Import a dataset from HuggingFace Hub
+    
+    Args:
+        dataset_name: HuggingFace dataset identifier (e.g., "ag_news")
+        config: Dataset configuration/subset
+        split: Dataset split (train/validation/test)
+        num_samples: Number of samples to import
+    """
+    try:
+        from hf_importer import HuggingFaceImporter
+        
+        # Import from HuggingFace
+        importer = HuggingFaceImporter()
+        dataset_data = importer.import_dataset(dataset_name, config, split, num_samples)
+        
+        if not dataset_data:
+            raise HTTPException(status_code=400, detail="Failed to import dataset from HuggingFace")
+        
+        # Check if dataset already exists
+        existing = db.query(Dataset).filter(Dataset.name == dataset_data["name"]).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Dataset already exists")
+        
+        # Create dataset
+        dataset_id = str(uuid.uuid4())
+        dataset = Dataset(
+            id=dataset_id,
+            **{k: v for k, v in dataset_data.items() if k != 'name'},
+            name=dataset_data["name"],
+            task_type=TaskType(dataset_data["task_type"]),
+            num_examples=len(dataset_data["ground_truth"])
+        )
+        
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+        
+        return SuccessResponse(
+            message=f"Successfully imported {dataset_name} from HuggingFace",
+            data={
+                "dataset_id": dataset_id,
+                "name": dataset_data["name"],
+                "num_examples": len(dataset_data["ground_truth"])
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Health Check ====================
 
 @app.get("/health")

@@ -56,6 +56,19 @@ export const getLeaderboard = async (datasetId, includeInternal = true) => {
   return response.data;
 };
 
+// Admin/Data Management APIs
+export const seedSampleData = async () => {
+  const response = await api.post('/api/admin/seed-data');
+  return response.data;
+};
+
+export const importFromHuggingFace = async (datasetName, config = 'default', split = 'test', numSamples = 100) => {
+  const response = await api.post('/api/admin/import-huggingface', null, {
+    params: { dataset_name: datasetName, config, split, num_samples: numSamples }
+  });
+  return response.data;
+};
+
 // Health check
 export const healthCheck = async () => {
   const response = await api.get('/health');
