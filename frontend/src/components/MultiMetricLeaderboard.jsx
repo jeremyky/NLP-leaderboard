@@ -105,10 +105,16 @@ const MultiMetricLeaderboard = ({ leaderboard }) => {
               >
                 <td className="p-3 text-white">
                   <div className="flex items-center">
-                    {index === 0 && <span className="mr-1">🥇</span>}
-                    {index === 1 && <span className="mr-1">🥈</span>}
-                    {index === 2 && <span className="mr-1">🥉</span>}
-                    {index + 1}
+                    {index === 0 && (
+                      <span className="mr-2 text-lg font-bold text-yellow-400">1st</span>
+                    )}
+                    {index === 1 && (
+                      <span className="mr-2 text-lg font-bold text-gray-300">2nd</span>
+                    )}
+                    {index === 2 && (
+                      <span className="mr-2 text-lg font-bold text-amber-600">3rd</span>
+                    )}
+                    {index > 2 && <span>{index + 1}</span>}
                   </div>
                 </td>
                 <td className="p-3 text-white">

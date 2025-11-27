@@ -6,6 +6,7 @@ from GPT-4o, Claude, Llama, etc.
 """
 from database import SessionLocal, init_db
 from models import Dataset, Submission, TaskType, SubmissionStatus
+from evaluators import get_evaluator
 from datetime import datetime
 import uuid
 
@@ -79,16 +80,16 @@ SAMPLE_DATASETS = [
         "primary_metric": "exact_match",
         "additional_metrics": ["f1"],
         "ground_truth": [
-            {"id": "1", "question": "When was the University of Chicago founded?", "context": "The University of Chicago was founded in 1890.", "answer": "1890"},
-            {"id": "2", "question": "What is the capital of France?", "context": "Paris is the capital and most populous city of France.", "answer": "Paris"},
-            {"id": "3", "question": "Who wrote Romeo and Juliet?", "context": "Romeo and Juliet is a tragedy written by William Shakespeare early in his career.", "answer": "William Shakespeare"},
-            {"id": "4", "question": "What is the speed of light?", "context": "The speed of light in vacuum is exactly 299,792,458 meters per second.", "answer": "299,792,458 meters per second"},
-            {"id": "5", "question": "When did World War II end?", "context": "World War II ended in 1945 with the surrender of Germany and Japan.", "answer": "1945"},
-            {"id": "6", "question": "What is the largest planet?", "context": "Jupiter is the largest planet in our solar system.", "answer": "Jupiter"},
-            {"id": "7", "question": "Who painted the Mona Lisa?", "context": "The Mona Lisa is a portrait painting by Italian artist Leonardo da Vinci.", "answer": "Leonardo da Vinci"},
-            {"id": "8", "question": "What is DNA?", "context": "DNA, or deoxyribonucleic acid, is the hereditary material in humans and almost all other organisms.", "answer": "deoxyribonucleic acid"},
-            {"id": "9", "question": "Where is Mount Everest?", "context": "Mount Everest is located in the Mahalangur Himal sub-range of the Himalayas on the border between Nepal and Tibet.", "answer": "Nepal and Tibet"},
-            {"id": "10", "question": "When was the Internet invented?", "context": "The Internet was developed in the late 1960s by the United States Department of Defense.", "answer": "late 1960s"},
+            {"id": "1", "question": "When was the University of Chicago founded?", "context": "The University of Chicago is a private research university located in Chicago, Illinois. It was established through the efforts of the American Baptist Education Society and oil magnate John D. Rockefeller. The university opened its doors to students in the early 1890s, with its first classes held in temporary buildings. The institution quickly gained recognition for its rigorous academic programs and commitment to research.", "answer": "1890"},
+            {"id": "2", "question": "What is the capital of France?", "context": "France is a country located in Western Europe, bordered by Spain, Italy, Germany, Belgium, and Switzerland. The country's largest city and political center is located along the Seine River. This city is known for landmarks such as the Eiffel Tower, the Louvre Museum, and Notre-Dame Cathedral. It serves as the seat of the French government and is home to over 2 million people.", "answer": "Paris"},
+            {"id": "3", "question": "Who wrote Romeo and Juliet?", "context": "Romeo and Juliet is one of the most famous works of English literature, telling the tragic story of two young lovers from feuding families in Verona. The play was written during the Renaissance period by an English playwright and poet who is widely regarded as the greatest writer in the English language. This author also wrote other famous works including Hamlet, Macbeth, and A Midsummer Night's Dream.", "answer": "William Shakespeare"},
+            {"id": "4", "question": "What is the speed of light?", "context": "Light travels through a vacuum at a constant speed that is fundamental to physics. This speed is approximately 300,000 kilometers per second, or more precisely, 299,792,458 meters per second. This constant, denoted as 'c' in Einstein's famous equation E=mc², is the maximum speed at which all matter and information in the universe can travel.", "answer": "299,792,458 meters per second"},
+            {"id": "5", "question": "When did World War II end?", "context": "World War II was a global conflict that lasted from 1939 to 1945, involving most of the world's nations. The war in Europe concluded with Germany's surrender in May 1945, while the conflict in the Pacific theater continued until Japan's surrender later that same year, following the atomic bombings of Hiroshima and Nagasaki. The final surrender documents were signed in September 1945.", "answer": "1945"},
+            {"id": "6", "question": "What is the largest planet?", "context": "The solar system consists of eight planets orbiting the Sun. Among these, one planet stands out for its massive size - it is so large that it could contain all the other planets combined. This gas giant has a Great Red Spot, a storm larger than Earth that has been raging for centuries. It has over 80 moons, including the four largest moons discovered by Galileo.", "answer": "Jupiter"},
+            {"id": "7", "question": "Who painted the Mona Lisa?", "context": "The Mona Lisa is perhaps the world's most famous painting, currently housed in the Louvre Museum in Paris. This portrait was created during the Italian Renaissance by a polymath who excelled in multiple fields including painting, sculpture, engineering, and anatomy. The artist is also known for works such as The Last Supper and numerous scientific notebooks filled with inventions and anatomical studies.", "answer": "Leonardo da Vinci"},
+            {"id": "8", "question": "What is DNA?", "context": "Genetic information in living organisms is stored in a molecule that contains the instructions needed for an organism to develop, survive, and reproduce. This molecule, which stands for deoxyribonucleic acid, is found in the nucleus of cells and is composed of two strands that form a double helix structure. It was first identified in the late 1860s, but its structure wasn't fully understood until 1953.", "answer": "deoxyribonucleic acid"},
+            {"id": "9", "question": "Where is Mount Everest?", "context": "Mount Everest is the highest peak on Earth, reaching an elevation of 8,848.86 meters above sea level. This mountain is part of the Himalayan mountain range, which stretches across several countries in South Asia. The peak itself sits on the border between two nations: one to the south known for its trekking and mountaineering tourism, and one to the north that is an autonomous region of China.", "answer": "Nepal and Tibet"},
+            {"id": "10", "question": "When was the Internet invented?", "context": "The Internet has its origins in a research project initiated by the United States Department of Defense. The Advanced Research Projects Agency Network (ARPANET) was developed as a means of communication that could withstand nuclear attacks. The first message was sent between computers at UCLA and Stanford in 1969. This network gradually evolved into the global system we know today, though it took several decades to become widely accessible to the public.", "answer": "late 1960s"},
         ],
         "baseline_models": [
             {"model": "GPT-4o", "score": 0.89, "version": "2024-11-01", "organization": "OpenAI"},
@@ -227,6 +228,9 @@ def seed_database():
             baseline_models = dataset_config.get("baseline_models", [])
             print(f"   Adding {len(baseline_models)} baseline models...")
             
+            # Get evaluator for this dataset
+            evaluator = get_evaluator(dataset_config["task_type"])
+            
             for baseline in baseline_models:
                 submission_id = str(uuid.uuid4())
                 
@@ -236,7 +240,11 @@ def seed_database():
                     baseline["score"]
                 )
                 
-                # Create submission
+                # Actually evaluate the predictions using the evaluator
+                scores = evaluator.evaluate(dataset_config["ground_truth"], predictions)
+                primary_score = scores.get(dataset_config["primary_metric"], baseline["score"])
+                
+                # Create submission with actual evaluated scores
                 submission = Submission(
                     id=submission_id,
                     dataset_id=dataset_id,
@@ -245,16 +253,16 @@ def seed_database():
                     organization=baseline.get("organization"),
                     predictions=predictions,
                     status=SubmissionStatus.COMPLETED,
-                    primary_score=baseline["score"],
-                    detailed_scores={dataset_config["primary_metric"]: baseline["score"]},
-                    confidence_interval=f"{baseline['score']-0.02:.2f} - {baseline['score']+0.02:.2f}",
+                    primary_score=primary_score,
+                    detailed_scores=scores,
+                    confidence_interval=f"{primary_score-0.02:.2f} - {primary_score+0.02:.2f}",
                     is_internal=True,
                     created_at=datetime.utcnow(),
                     evaluated_at=datetime.utcnow()
                 )
                 db.add(submission)
                 
-                print(f"      ✓ {baseline['model']}: {baseline['score']:.2f}")
+                print(f"      ✓ {baseline['model']}: {primary_score:.4f} (evaluated)")
             
             db.commit()
             print(f"   ✅ Dataset '{dataset_config['name']}' loaded successfully\n")

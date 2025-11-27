@@ -210,6 +210,7 @@ def seed_multilingual_datasets():
     """Load multilingual datasets into the database"""
     from database import SessionLocal, init_db
     from models import Dataset, Submission, TaskType, SubmissionStatus
+    from evaluators import get_evaluator
     from datetime import datetime
     import uuid
     
@@ -257,6 +258,9 @@ def seed_multilingual_datasets():
             baseline_models = dataset_config.get("baseline_models", [])
             print(f"   Adding {len(baseline_models)} multilingual models...")
             
+            # Get evaluator for this dataset
+            evaluator = get_evaluator(dataset_config["task_type"])
+            
             for baseline in baseline_models:
                 from seed_data import create_baseline_predictions
                 
@@ -266,21 +270,9 @@ def seed_multilingual_datasets():
                     baseline["score"]
                 )
                 
-                # Calculate metrics including per-language breakdown
-                detailed_scores = {
-                    dataset_config["primary_metric"]: baseline["score"]
-                }
-                
-                # Add additional metrics with variations
-                for metric in dataset_config["additional_metrics"]:
-                    if "per_language" in metric:
-                        # Create per-language scores (slight variation around overall score)
-                        detailed_scores[metric] = {}
-                        for lang in dataset_config["languages"]:
-                            lang_score = baseline["score"] + (hash(lang) % 20 - 10) / 100
-                            detailed_scores[metric][lang] = round(max(0, min(1, lang_score)), 3)
-                    else:
-                        detailed_scores[metric] = round(baseline["score"] + (hash(metric) % 10) / 100 - 0.05, 4)
+                # Actually evaluate the predictions using the evaluator
+                scores = evaluator.evaluate(dataset_config["ground_truth"], predictions)
+                primary_score = scores.get(dataset_config["primary_metric"], baseline["score"])
                 
                 submission = Submission(
                     id=submission_id,
@@ -290,16 +282,16 @@ def seed_multilingual_datasets():
                     organization=baseline.get("organization"),
                     predictions=predictions,
                     status=SubmissionStatus.COMPLETED,
-                    primary_score=baseline["score"],
-                    detailed_scores=detailed_scores,
-                    confidence_interval=f"{baseline['score']-0.02:.2f} - {baseline['score']+0.02:.2f}",
+                    primary_score=primary_score,
+                    detailed_scores=scores,
+                    confidence_interval=f"{primary_score-0.02:.2f} - {primary_score+0.02:.2f}",
                     is_internal=True,
                     created_at=datetime.now(),
                     evaluated_at=datetime.now()
                 )
                 db.add(submission)
                 
-                print(f"      ✓ {baseline['model']}: {baseline['score']:.2f}")
+                print(f"      ✓ {baseline['model']}: {primary_score:.4f} (evaluated)")
             
             db.commit()
             print(f"   ✅ Dataset loaded successfully\n")

@@ -165,6 +165,37 @@ async def get_dataset(
     )
 
 
+@app.get("/api/datasets/{dataset_id}/questions")
+async def get_dataset_questions(
+    dataset_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get test questions for a dataset (without answers)
+    
+    This endpoint provides the questions and their IDs so users can prepare predictions.
+    Ground truth answers are never exposed.
+    """
+    dataset = db.query(Dataset).filter(Dataset.id == dataset_id).first()
+    
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    
+    # Return questions without answers
+    questions = [
+        {k: v for k, v in item.items() if k != 'answer'}
+        for item in dataset.ground_truth
+    ]
+    
+    return {
+        "dataset_id": dataset.id,
+        "dataset_name": dataset.name,
+        "task_type": dataset.task_type.value,
+        "num_questions": len(questions),
+        "questions": questions
+    }
+
+
 # ==================== Submission Endpoints ====================
 
 @app.post("/api/submissions", response_model=SuccessResponse, status_code=202)

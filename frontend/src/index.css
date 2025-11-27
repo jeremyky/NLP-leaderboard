@@ -57,3 +57,15 @@ code {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
+/* Logo styling */
+img[alt="Anote Logo"] {
+  filter: brightness(1.1);
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, transform, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+

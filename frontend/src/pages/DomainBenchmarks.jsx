@@ -79,42 +79,42 @@ const DomainBenchmarks = () => {
     { 
       id: 'multilingual', 
       name: 'Multilingual', 
-      icon: '🌍', 
+      color: 'from-blue-500 to-cyan-500',
       data: multilingual,
       description: 'Cross-lingual evaluation across 20+ languages'
     },
     { 
       id: 'finance', 
       name: 'Finance & Business', 
-      icon: '💼', 
+      color: 'from-green-500 to-emerald-500',
       data: finance,
       description: 'Financial sentiment, Q&A, and entity recognition'
     },
     { 
       id: 'science', 
       name: 'Science & Education', 
-      icon: '🔬', 
+      color: 'from-purple-500 to-pink-500',
       data: science,
       description: 'Scientific reasoning and educational tasks'
     },
     { 
       id: 'code', 
       name: 'Code Generation', 
-      icon: '💻', 
+      color: 'from-orange-500 to-red-500',
       data: code,
       description: 'Programming and software engineering tasks'
     },
     { 
       id: 'reasoning', 
       name: 'Mathematical Reasoning', 
-      icon: '🧮', 
+      color: 'from-indigo-500 to-blue-500',
       data: reasoning,
       description: 'Multi-step problem solving and logical reasoning'
     },
     { 
       id: 'safety', 
       name: 'Safety & Alignment', 
-      icon: '🛡️', 
+      color: 'from-yellow-500 to-amber-500',
       data: safety,
       description: 'Truthfulness, toxicity, and bias evaluation'
     },
@@ -150,18 +150,17 @@ const DomainBenchmarks = () => {
                 onClick={() => handleDomainChange(domain.id)}
                 className={`p-4 rounded-lg border-2 transition-all ${
                   activeDomain === domain.id
-                    ? 'border-blue-500 bg-blue-900 bg-opacity-30'
-                    : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                    ? `border-transparent bg-gradient-to-br ${domain.color} shadow-lg`
+                    : 'border-gray-700 bg-gray-800 hover:border-gray-600 hover:bg-gray-700'
                 }`}
               >
-                <div className="text-3xl mb-2">{domain.icon}</div>
-                <div className={`font-semibold text-sm ${
+                <div className={`font-semibold text-sm mb-1 ${
                   activeDomain === domain.id ? 'text-white' : 'text-gray-300'
                 }`}>
                   {domain.name}
                 </div>
-                <div className={`text-xs mt-1 ${
-                  activeDomain === domain.id ? 'text-blue-300' : 'text-gray-500'
+                <div className={`text-xs ${
+                  activeDomain === domain.id ? 'text-white text-opacity-80' : 'text-gray-500'
                 }`}>
                   {domain.data.length} {domain.data.length === 1 ? 'benchmark' : 'benchmarks'}
                 </div>
@@ -186,21 +185,20 @@ const DomainBenchmarks = () => {
         ) : (
           <>
             {/* Domain Header */}
-            <div className="bg-gray-950 rounded-lg p-6 mb-8">
-              <div className="flex items-start space-x-4">
-                <div className="text-5xl">{currentDomain?.icon}</div>
+            <div className={`bg-gradient-to-br ${currentDomain?.color} rounded-lg p-6 mb-8 shadow-lg`}>
+              <div className="flex items-start">
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-white mb-2">
                     {currentDomain?.name}
                   </h2>
-                  <p className="text-gray-400 mb-4">
+                  <p className="text-white text-opacity-90 mb-4">
                     {currentDomain?.description}
                   </p>
                   <div className="flex items-center space-x-4 text-sm">
-                    <span className="px-3 py-1 bg-blue-900 text-blue-200 rounded">
+                    <span className="px-3 py-1 bg-white bg-opacity-20 text-white rounded backdrop-blur-sm">
                       {displayData.length} {displayData.length === 1 ? 'Benchmark' : 'Benchmarks'}
                     </span>
-                    <span className="px-3 py-1 bg-purple-900 text-purple-200 rounded">
+                    <span className="px-3 py-1 bg-white bg-opacity-20 text-white rounded backdrop-blur-sm">
                       {displayData.reduce((sum, lb) => sum + lb.entries.length, 0)} Models
                     </span>
                   </div>
@@ -210,15 +208,17 @@ const DomainBenchmarks = () => {
 
             {/* Leaderboards */}
             {displayData.length === 0 ? (
-              <div className="text-center text-gray-400 p-12 bg-gray-950 rounded-lg">
-                <div className="text-5xl mb-4">🚧</div>
-                <p className="text-xl mb-2">Coming Soon</p>
-                <p className="text-sm">
+              <div className="text-center text-gray-400 p-12 bg-gray-950 rounded-lg border border-gray-800">
+                <svg className="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-xl mb-2 text-gray-300">Coming Soon</p>
+                <p className="text-sm mb-6">
                   No {currentDomain?.name} benchmarks available yet.
                 </p>
                 <button
                   onClick={() => navigate('/create-dataset')}
-                  className="mt-4 px-6 py-2 btn-black rounded"
+                  className="px-6 py-2 btn-black rounded"
                 >
                   Create First Benchmark
                 </button>

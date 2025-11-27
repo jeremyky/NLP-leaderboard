@@ -175,17 +175,52 @@ const ModelInsights = ({ scores, primaryMetric, modelName }) => {
 
   const getIconAndColor = (type) => {
     switch (type) {
-      case 'success': return { icon: '✅', color: 'bg-green-900 border-green-700 text-green-100' };
-      case 'warning': return { icon: '⚠️', color: 'bg-yellow-900 border-yellow-700 text-yellow-100' };
-      case 'error': return { icon: '❌', color: 'bg-red-900 border-red-700 text-red-100' };
-      default: return { icon: '💡', color: 'bg-blue-900 border-blue-700 text-blue-100' };
+      case 'success': 
+        return { 
+          icon: (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+          ), 
+          color: 'bg-green-900 border-green-700 text-green-100' 
+        };
+      case 'warning': 
+        return { 
+          icon: (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          ), 
+          color: 'bg-yellow-900 border-yellow-700 text-yellow-100' 
+        };
+      case 'error': 
+        return { 
+          icon: (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+          ), 
+          color: 'bg-red-900 border-red-700 text-red-100' 
+        };
+      default: 
+        return { 
+          icon: (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+              <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+            </svg>
+          ), 
+          color: 'bg-blue-900 border-blue-700 text-blue-100' 
+        };
     }
   };
 
   return (
     <div className="mt-6 space-y-4">
       <h3 className="text-lg font-bold text-white flex items-center">
-        <span className="mr-2">🎯</span>
+        <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        </svg>
         Model Tuning Insights
         {modelName && <span className="ml-2 text-sm text-gray-400">for {modelName}</span>}
       </h3>
@@ -195,13 +230,19 @@ const ModelInsights = ({ scores, primaryMetric, modelName }) => {
         return (
           <div key={index} className={`border rounded-lg p-4 ${color}`}>
             <div className="flex items-start">
-              <span className="text-2xl mr-3">{icon}</span>
+              <span className="mr-3 flex-shrink-0">{icon}</span>
               <div className="flex-1">
                 <h4 className="font-bold mb-2">{insight.title}</h4>
                 <p className="text-sm mb-3">{insight.message}</p>
                 
                 <div className="mt-3">
-                  <p className="text-xs font-semibold mb-2">💡 SUGGESTIONS:</p>
+                  <p className="text-xs font-semibold mb-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                      <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                    </svg>
+                    SUGGESTIONS:
+                  </p>
                   <ul className="text-sm space-y-1">
                     {insight.suggestions.map((suggestion, i) => (
                       <li key={i} className="flex items-start">

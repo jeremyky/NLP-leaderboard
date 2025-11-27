@@ -21,6 +21,11 @@ export const getDataset = async (datasetId) => {
   return response.data;
 };
 
+export const getDatasetQuestions = async (datasetId) => {
+  const response = await api.get(`/api/datasets/${datasetId}/questions`);
+  return response.data;
+};
+
 export const createDataset = async (datasetData) => {
   const response = await api.post('/api/datasets', datasetData);
   return response.data;

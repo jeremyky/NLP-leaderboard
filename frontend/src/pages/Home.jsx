@@ -45,21 +45,21 @@ const Home = () => {
       <div className="mb-8 flex flex-wrap gap-3 justify-center">
         <button
           onClick={() => window.location.href = '/domains?domain=multilingual'}
-          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all"
+          className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg hover:shadow-xl"
         >
-          🌍 Multilingual Benchmarks
+          Multilingual Benchmarks
         </button>
         <button
           onClick={() => window.location.href = '/domains?domain=finance'}
-          className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg text-sm font-medium transition-all"
+          className="px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg hover:shadow-xl"
         >
-          💼 Finance Benchmarks
+          Finance Benchmarks
         </button>
         <button
           onClick={() => window.location.href = '/domains'}
-          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-all"
+          className="px-5 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-all border border-gray-700 hover:border-gray-600"
         >
-          View All Domains →
+          View All Domains
         </button>
       </div>
 

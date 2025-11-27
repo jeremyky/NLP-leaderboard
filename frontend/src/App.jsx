@@ -13,9 +13,14 @@ function App() {
         <nav className="bg-gray-950 border-b border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
-                <Link to="/" className="text-white text-xl font-bold">
-                  Anote Leaderboard
+              <div className="flex items-center space-x-3">
+                <Link to="/" className="flex items-center space-x-3">
+                  <img 
+                    src="/logo.png" 
+                    alt="Anote Logo" 
+                    className="h-8 w-8 object-contain"
+                  />
+                  <span className="text-white text-xl font-semibold">Anote Leaderboard</span>
                 </Link>
               </div>
               
@@ -28,9 +33,8 @@ function App() {
                 </Link>
                 <Link
                   to="/domains"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
-                  <span className="mr-1">🌍</span>
                   Domain-Specific
                 </Link>
                 <Link
@@ -62,7 +66,7 @@ function App() {
         <footer className="bg-gray-950 border-t border-gray-800 mt-20">
           <div className="max-w-7xl mx-auto px-4 py-6 text-center text-gray-400 text-sm">
             <p className="mb-2">
-              Built with ❤️ by Anote | <a href="https://anote.ai" className="text-blue-400 hover:text-blue-300">anote.ai</a>
+              Built by <a href="https://anote.ai" className="text-blue-400 hover:text-blue-300 font-medium">Anote</a>
             </p>
             <p>
               <a 

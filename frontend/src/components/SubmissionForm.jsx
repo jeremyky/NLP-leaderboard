@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDatasets, submitPredictions, getSubmission } from '../services/api';
+import { getDatasets, submitPredictions, getSubmission, getDatasetQuestions } from '../services/api';
 import DetailedMetrics from './DetailedMetrics';
 
 const SubmissionForm = ({ onSuccess }) => {
@@ -18,6 +18,9 @@ const SubmissionForm = ({ onSuccess }) => {
   const [error, setError] = useState(null);
   const [submissionId, setSubmissionId] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState(null);
+  const [questions, setQuestions] = useState(null);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [showQuestions, setShowQuestions] = useState(false);
 
   useEffect(() => {
     loadDatasets();
@@ -37,14 +40,51 @@ const SubmissionForm = ({ onSuccess }) => {
     
     const dataset = datasets.find(d => d.id === datasetId);
     setSelectedDataset(dataset);
+    setQuestions(null);
+    setShowQuestions(false);
     
     // Initialize predictions based on dataset questions
     if (dataset?.questions) {
       setPredictions(dataset.questions.map(q => ({ id: q.id, prediction: '' })));
+      setQuestions({ questions: dataset.questions });
     } else {
-      // If test set is private, user must know the question IDs
+      // If test set is private, user must fetch questions
       setPredictions([{ id: '', prediction: '' }]);
     }
+  };
+
+  const fetchQuestions = async () => {
+    if (!formData.dataset_id) return;
+    
+    setLoadingQuestions(true);
+    setError(null);
+    try {
+      const data = await getDatasetQuestions(formData.dataset_id);
+      setQuestions(data);
+      setShowQuestions(true);
+      
+      // Auto-populate prediction rows with question IDs
+      setPredictions(data.questions.map(q => ({ id: q.id, prediction: '' })));
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to load questions');
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
+  const downloadQuestions = () => {
+    if (!questions) return;
+    
+    const dataStr = JSON.stringify(questions, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${selectedDataset?.name || 'questions'}_questions.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handlePredictionChange = (index, field, value) => {
@@ -197,8 +237,106 @@ const SubmissionForm = ({ onSuccess }) => {
               <p><strong>Metric:</strong> {selectedDataset.primary_metric}</p>
               <p><strong>Examples:</strong> {selectedDataset.num_examples}</p>
               {!selectedDataset.test_set_public && (
-                <p className="text-yellow-400 mt-2">⚠️ Test questions are private</p>
+                <div className="mt-3 space-y-2">
+                  <p className="text-yellow-400 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    Test questions are private
+                  </p>
+                  <button
+                    type="button"
+                    onClick={fetchQuestions}
+                    disabled={loadingQuestions}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm disabled:opacity-50 flex items-center"
+                  >
+                    {loadingQuestions ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Get Questions & IDs
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
+            </div>
+          )}
+          
+          {/* Questions Display */}
+          {questions && showQuestions && (
+            <div className="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-700">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-white font-semibold">
+                  Test Questions ({questions.num_questions || questions.questions?.length || 0} total)
+                </h4>
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={downloadQuestions}
+                    className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download JSON
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuestions(false)}
+                    className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm"
+                  >
+                    Hide
+                  </button>
+                </div>
+              </div>
+              
+              <div className="max-h-96 overflow-y-auto space-y-3">
+                {questions.questions?.map((q, idx) => (
+                  <div key={q.id || idx} className="p-3 bg-gray-900 rounded border border-gray-700">
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="text-xs font-mono text-blue-400 bg-blue-900 px-2 py-1 rounded">
+                        ID: {q.id}
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-sm text-gray-300">
+                      {q.question && (
+                        <p><strong>Question:</strong> {q.question}</p>
+                      )}
+                      {q.context && (
+                        <p><strong>Context:</strong> {q.context}</p>
+                      )}
+                      {q.text && (
+                        <p><strong>Text:</strong> {q.text}</p>
+                      )}
+                      {q.sentence && (
+                        <p><strong>Sentence:</strong> {q.sentence}</p>
+                      )}
+                      {q.premise && (
+                        <p><strong>Premise:</strong> {q.premise}</p>
+                      )}
+                      {q.hypothesis && (
+                        <p><strong>Hypothesis:</strong> {q.hypothesis}</p>
+                      )}
+                      {q.query && (
+                        <p><strong>Query:</strong> {q.query}</p>
+                      )}
+                      {q.language && (
+                        <p><strong>Language:</strong> {q.language}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -306,8 +444,12 @@ const SubmissionForm = ({ onSuccess }) => {
               ))}
             </div>
 
-            <p className="text-sm text-gray-400">
-              💡 Tip: Your predictions will be evaluated against the ground truth. Scores will be computed automatically.
+            <p className="text-sm text-gray-400 flex items-start">
+              <svg className="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+              </svg>
+              <span>Your predictions will be evaluated against the ground truth. Scores will be computed automatically. Use the "Get Questions & IDs" button above to load all test questions.</span>
             </p>
           </div>
         )}
