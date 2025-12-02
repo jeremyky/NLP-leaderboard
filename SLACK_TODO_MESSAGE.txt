@@ -1,0 +1,22 @@
+Created a comprehensive TODO list for the leaderboard project. Here are the key priorities:
+
+Critical items:
+• Verify internal models are actually being evaluated against datasets (not hardcoded)
+• Test HuggingFace dataset import thoroughly
+• Test model submission import pipeline
+• Fix HuggingFace dataset links
+• Add comprehensive test suite for all task types
+
+Medium priority:
+• Improve UI/UX with better loading states, error handling, and mobile responsiveness
+• Add more domain-specific benchmarks (finance, science, code, reasoning, safety)
+• Add more general benchmarks (GLUE, summarization, dialogue)
+• Add features like model comparison view and submission history
+
+Low priority:
+• Infrastructure improvements (caching, rate limiting, monitoring)
+• Documentation improvements
+• Advanced features (custom metrics, ensemble evaluation)
+
+Full TODO list is in TODO.md with 150+ items organized by priority. We can tackle these incrementally as we continue development.
+

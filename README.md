@@ -62,6 +62,59 @@ Once running, visit:
 
 ---
 
+## 🛠 Running the Backend & Frontend Locally
+
+### Backend (FastAPI API)
+
+- **Install Python deps** (from repo root):
+
+```bash
+pip install -r requirements.txt
+```
+
+- **Run the API server**:
+
+```bash
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+- **Optional environment**:
+  - **`DATABASE_URL`** (optional): defaults to `sqlite:///./leaderboard.db` if not set.
+
+### Frontend (Vite + React)
+
+From the `frontend` directory:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+- The dev server will start on a port like `http://localhost:5173` (Vite default).
+- The frontend talks to the backend via:
+  - **`VITE_API_URL`** (optional): if not set, it defaults to `http://localhost:8000`.
+  - To point to a different backend, create `frontend/.env` with:
+
+```bash
+VITE_API_URL=http://localhost:8000
+```
+
+### Running Tests
+
+- **Backend tests** (from repo root):
+
+```bash
+pytest
+```
+
+This runs:
+- Evaluator tests for all task types (classification, NER, QA, retrieval)
+- Internal baseline consistency checks
+- Submission pipeline and HuggingFace import tests
+
+---
+
 ## 📚 API Endpoints
 
 ### Datasets

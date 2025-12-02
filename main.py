@@ -553,9 +553,15 @@ async def import_from_huggingface(
         
         # Create dataset
         dataset_id = str(uuid.uuid4())
+        # Avoid passing task_type/name/num_examples twice (from **dataset_data and explicit args)
+        filtered_data = {
+            k: v
+            for k, v in dataset_data.items()
+            if k not in {"name", "task_type", "num_examples"}
+        }
         dataset = Dataset(
             id=dataset_id,
-            **{k: v for k, v in dataset_data.items() if k != 'name'},
+            **filtered_data,
             name=dataset_data["name"],
             task_type=TaskType(dataset_data["task_type"]),
             num_examples=len(dataset_data["ground_truth"])

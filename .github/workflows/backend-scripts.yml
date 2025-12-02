@@ -1,0 +1,46 @@
+name: Backend maintenance scripts
+
+on:
+  push:
+    paths:
+      - "seed_data.py"
+      - "finance_datasets.py"
+      - "multilingual_datasets.py"
+      - "models.py"
+      - "evaluators.py"
+      - ".github/workflows/backend-scripts.yml"
+  workflow_dispatch:
+
+jobs:
+  run-seeders:
+    name: Run seeding scripts against SQLite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Clear and seed sample datasets
+        run: |
+          python seed_data.py --clear
+          python seed_data.py
+
+      - name: Seed finance datasets
+        run: |
+          python finance_datasets.py
+
+      - name: Seed multilingual datasets
+        run: |
+          python multilingual_datasets.py
+
+

@@ -1,0 +1,56 @@
+name: Deploy (placeholder)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy backend & frontend
+    runs-on: ubuntu-latest
+    env:
+      # Example: set environment name for your deployment target
+      ENVIRONMENT: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run backend tests before deploy
+        run: |
+          pytest -q
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci || npm install
+
+      - name: Build frontend assets
+        working-directory: frontend
+        env:
+          VITE_API_URL: "https://api.your-deployment-domain.com" # TODO: replace with real URL or secret
+        run: npm run build
+
+      # TODO: Replace the following step with a real deployment (Docker, cloud provider CLI, etc.)
+      - name: Deployment placeholder
+        run: |
+          echo "Build artifacts are ready."
+          echo "Hook up your deployment commands here (e.g., docker build & push, kubectl apply, or cloud CLI deploy)."
+
+

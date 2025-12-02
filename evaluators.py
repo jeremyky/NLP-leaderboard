@@ -180,7 +180,9 @@ class NEREvaluator(BaseEvaluator):
         f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0
         
         # Compute partial match scores (relaxed boundaries)
-        # Consider an entity correct if it overlaps with ground truth, even if boundaries don't match exactly
+        # Consider an entity correct if its text overlaps with a ground truth entity,
+        # even if boundaries don't match exactly. This logic must work for both
+        # in-memory tuples and JSON-serialized lists.
         partial_tp = 0
         for gt in ground_truth:
             gt_id = gt["id"]
@@ -195,17 +197,26 @@ class NEREvaluator(BaseEvaluator):
             if not isinstance(true_entities, list):
                 true_entities = [true_entities]
             
-            # For simplicity, count overlapping entities
+            # For simplicity, count overlapping entities by comparing their surface text
             for pred_ent in pred_entities:
+                # Handle both tuple and list representations from JSON
+                if isinstance(pred_ent, (list, tuple)) and len(pred_ent) >= 1:
+                    pred_text = str(pred_ent[0]).lower()
+                else:
+                    pred_text = str(pred_ent).lower()
+                
                 for true_ent in true_entities:
-                    # Simple overlap check
-                    if isinstance(pred_ent, tuple) and isinstance(true_ent, tuple):
-                        # Check if entity texts overlap
-                        if len(pred_ent) >= 1 and len(true_ent) >= 1:
-                            if str(pred_ent[0]).lower() in str(true_ent[0]).lower() or \
-                               str(true_ent[0]).lower() in str(pred_ent[0]).lower():
-                                partial_tp += 1
-                                break
+                    if isinstance(true_ent, (list, tuple)) and len(true_ent) >= 1:
+                        true_text = str(true_ent[0]).lower()
+                    else:
+                        true_text = str(true_ent).lower()
+                    
+                    # Simple overlap check on surface forms
+                    if pred_text and true_text and (
+                        pred_text in true_text or true_text in pred_text
+                    ):
+                        partial_tp += 1
+                        break
         
         partial_precision = partial_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0
         partial_recall = partial_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 0
