@@ -1,5 +1,5 @@
 """
-Comprehensive metrics information and documentation
+Comprehensive metrics information and documentation.
 
 Provides detailed explanations for all evaluation metrics used in the leaderboard.
 """
@@ -18,10 +18,9 @@ METRICS_CATALOG = {
             "0.9-1.0": "Excellent - Model is highly accurate",
             "0.7-0.9": "Good - Model performs well",
             "0.5-0.7": "Fair - Model has moderate performance",
-            "0.0-0.5": "Poor - Model performs worse than random"
-        }
+            "0.0-0.5": "Poor - Model performs worse than random",
+        },
     },
-    
     "precision": {
         "name": "Precision (Macro-Averaged)",
         "formula": "True Positives / (True Positives + False Positives)",
@@ -34,10 +33,9 @@ METRICS_CATALOG = {
             "0.9-1.0": "Excellent - Very few false positives",
             "0.7-0.9": "Good - Acceptable false positive rate",
             "0.5-0.7": "Fair - Significant false positives",
-            "0.0-0.5": "Poor - Many false positives"
-        }
+            "0.0-0.5": "Poor - Many false positives",
+        },
     },
-    
     "recall": {
         "name": "Recall (Macro-Averaged)",
         "formula": "True Positives / (True Positives + False Negatives)",
@@ -50,10 +48,9 @@ METRICS_CATALOG = {
             "0.9-1.0": "Excellent - Catches nearly all positive cases",
             "0.7-0.9": "Good - Catches most positive cases",
             "0.5-0.7": "Fair - Misses many positive cases",
-            "0.0-0.5": "Poor - Misses most positive cases"
-        }
+            "0.0-0.5": "Poor - Misses most positive cases",
+        },
     },
-    
     "f1": {
         "name": "F1 Score (Macro-Averaged)",
         "formula": "2 × (Precision × Recall) / (Precision + Recall)",
@@ -66,368 +63,9 @@ METRICS_CATALOG = {
             "0.9-1.0": "Excellent - Strong balance of precision and recall",
             "0.7-0.9": "Good - Good balance",
             "0.5-0.7": "Fair - Moderate performance",
-            "0.0-0.5": "Poor - Weak performance"
-        }
+            "0.0-0.5": "Poor - Weak performance",
+        },
     },
-    
-    # Q&A Metrics
-    "exact_match": {
-        "name": "Exact Match (EM)",
-        "formula": "1 if prediction == answer else 0 (normalized)",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Percentage of predictions that exactly match the ground truth after normalization (lowercase, punctuation removal).",
-        "example": "Question: 'Who wrote Hamlet?' Answer: 'Shakespeare' vs 'William Shakespeare' = no match",
-        "when_to_use": "Use for factual questions where precision is critical",
-        "limitations": "Very strict - doesn't give credit for partial correctness or synonyms",
-        "interpretation": {
-            "0.8-1.0": "Excellent - Model answers very precisely",
-            "0.6-0.8": "Good - Model usually gets exact answer",
-            "0.4-0.6": "Fair - Model often close but not exact",
-            "0.0-0.4": "Poor - Model rarely matches exactly"
-        }
-    },
-    
-    "token_f1": {
-        "name": "Token-level F1",
-        "formula": "F1 computed on word overlap between prediction and answer",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Measures word-level overlap between prediction and ground truth. More lenient than Exact Match.",
-        "example": "Answer: 'New York City', Prediction: 'New York' → F1 = 0.8 (2 of 3 words match)",
-        "when_to_use": "Use when partial credit should be given for partially correct answers",
-        "limitations": "Doesn't understand semantics - 'car' and 'automobile' get no credit",
-        "interpretation": {
-            "0.8-1.0": "Excellent - High word overlap with answers",
-            "0.6-0.8": "Good - Decent word overlap",
-            "0.4-0.6": "Fair - Moderate overlap",
-            "0.0-0.4": "Poor - Little overlap with correct answers"
-        }
-    },
-    
-    # NER Metrics
-    "ner_precision": {
-        "name": "NER Precision",
-        "formula": "Correct Entities / Predicted Entities",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Of all entities extracted, what proportion are correct? Entity must match both span (start/end) and type.",
-        "example": "Model predicts 10 entities, 8 are correct → precision = 0.8",
-        "when_to_use": "Use when false positive entities are problematic",
-        "limitations": "Doesn't penalize missed entities. Very strict on boundaries.",
-        "interpretation": {
-            "0.9-1.0": "Excellent - Very few spurious entities",
-            "0.7-0.9": "Good - Most predictions are valid entities",
-            "0.5-0.7": "Fair - Many false positive entities",
-            "0.0-0.5": "Poor - Most predictions are incorrect"
-        }
-    },
-    
-    "ner_recall": {
-        "name": "NER Recall",
-        "formula": "Correct Entities / True Entities",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Of all true entities in text, what proportion did we find? Both span and type must match.",
-        "example": "Text has 10 entities, model finds 7 correctly → recall = 0.7",
-        "when_to_use": "Use when missing entities is problematic",
-        "limitations": "Doesn't penalize false positives. Requires exact span match.",
-        "interpretation": {
-            "0.9-1.0": "Excellent - Finds nearly all entities",
-            "0.7-0.9": "Good - Finds most entities",
-            "0.5-0.7": "Fair - Misses many entities",
-            "0.0-0.5": "Poor - Misses most entities"
-        }
-    },
-    
-    "ner_f1": {
-        "name": "NER F1 Score",
-        "formula": "2 × (Precision × Recall) / (Precision + Recall)",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Harmonic mean of NER precision and recall. Standard metric for entity extraction.",
-        "example": "NER precision=0.85, recall=0.80 → F1 = 0.824",
-        "when_to_use": "Standard metric for comparing NER systems. Balances finding vs accuracy.",
-        "limitations": "Requires exact span + type match. Doesn't give partial credit.",
-        "interpretation": {
-            "0.9-1.0": "Excellent - State-of-the-art performance",
-            "0.8-0.9": "Good - Strong entity extraction",
-            "0.6-0.8": "Fair - Moderate performance",
-            "0.0-0.6": "Poor - Weak entity extraction"
-        }
-    },
-    
-    # Advanced Classification Metrics
-    "balanced_accuracy": {
-        "name": "Balanced Accuracy",
-        "formula": "Average of per-class recall",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Average recall across all classes. Unlike regular accuracy, this metric handles class imbalance well by treating all classes equally.",
-        "example": "For imbalanced data with 90% class A and 10% class B: If model gets 95% on A but 30% on B, balanced accuracy = (0.95 + 0.30) / 2 = 0.625",
-        "when_to_use": "Use for imbalanced datasets where minority classes are important",
-        "limitations": "May not reflect real-world performance if class distributions matter",
-        "interpretation": {
-            "0.8-1.0": "Excellent - Performs well across all classes",
-            "0.6-0.8": "Good - Decent performance on all classes",
-            "0.4-0.6": "Fair - Struggles with some classes",
-            "0.0-0.4": "Poor - Fails on multiple classes"
-        }
-    },
-    
-    "cohens_kappa": {
-        "name": "Cohen's Kappa",
-        "formula": "(p_observed - p_expected) / (1 - p_expected)",
-        "range": "-1.0 - 1.0 (higher is better, 0 = random)",
-        "description": "Measures agreement beyond chance. Accounts for possibility of correct predictions by random guessing.",
-        "example": "Kappa of 0.8 means model is 80% better than random guessing",
-        "when_to_use": "Use when you want to know if model is truly learning or just guessing",
-        "limitations": "Can be influenced by prevalence and bias in predictions",
-        "interpretation": {
-            "0.8-1.0": "Excellent - Almost perfect agreement",
-            "0.6-0.8": "Good - Substantial agreement",
-            "0.4-0.6": "Fair - Moderate agreement",
-            "0.0-0.4": "Poor - Slight to no agreement beyond chance"
-        }
-    },
-    
-    "matthews_corr": {
-        "name": "Matthews Correlation Coefficient (MCC)",
-        "formula": "(TP×TN - FP×FN) / sqrt((TP+FP)(TP+FN)(TN+FP)(TN+FN))",
-        "range": "-1.0 - 1.0 (higher is better, 0 = random)",
-        "description": "Correlation between predicted and true classifications. Works well even for imbalanced datasets.",
-        "example": "MCC of 0.9 indicates very strong correlation between predictions and truth",
-        "when_to_use": "Best metric for binary classification, especially with class imbalance",
-        "limitations": "Only available for binary classification",
-        "interpretation": {
-            "0.8-1.0": "Excellent - Very strong correlation",
-            "0.6-0.8": "Good - Strong correlation",
-            "0.4-0.6": "Fair - Moderate correlation",
-            "0.0-0.4": "Poor - Weak correlation, barely better than random"
-        }
-    },
-    
-    # Advanced NER Metrics
-    "partial_f1": {
-        "name": "Partial Match F1",
-        "formula": "F1 with relaxed boundary matching",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "F1 score that gives credit for partially correct entity boundaries. More lenient than strict F1.",
-        "example": "Predicting 'New York' when answer is 'New York City' gets partial credit",
-        "when_to_use": "Use when approximate entity boundaries are acceptable",
-        "limitations": "May be too lenient for applications requiring precise extraction",
-        "interpretation": {
-            "0.9-1.0": "Excellent - Very accurate entity detection",
-            "0.7-0.9": "Good - Most entities approximately correct",
-            "0.5-0.7": "Fair - Many boundary issues",
-            "0.0-0.5": "Poor - Weak entity detection"
-        }
-    },
-    
-    # Advanced Q&A Metrics
-    "bleu": {
-        "name": "BLEU Score",
-        "formula": "Modified n-gram precision with brevity penalty",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Measures n-gram overlap between prediction and reference. Originally for machine translation, useful for answer similarity.",
-        "example": "Answer: 'The cat sat on the mat', Prediction: 'The cat on the mat' → BLEU considers word overlap",
-        "when_to_use": "Use when word choice and phrasing matter, not just content",
-        "limitations": "Focuses on surface form, doesn't understand semantics",
-        "interpretation": {
-            "0.7-1.0": "Excellent - Very similar wording",
-            "0.5-0.7": "Good - Decent word overlap",
-            "0.3-0.5": "Fair - Some shared words",
-            "0.0-0.3": "Poor - Little word overlap"
-        }
-    },
-    
-    "answer_length_ratio": {
-        "name": "Answer Length Ratio",
-        "formula": "Predicted length / True answer length",
-        "range": "0.0+ (1.0 is ideal)",
-        "description": "Ratio of predicted answer length to ground truth length. Values >1 mean too verbose, <1 mean too brief.",
-        "example": "True answer: 5 words, Prediction: 10 words → ratio = 2.0 (too long)",
-        "when_to_use": "Use to detect if model is over-generating or under-generating",
-        "limitations": "Doesn't measure correctness, only length appropriateness",
-        "interpretation": {
-            "0.8-1.2": "Excellent - Appropriate length",
-            "0.6-0.8 or 1.2-1.5": "Good - Slightly off",
-            "0.4-0.6 or 1.5-2.0": "Fair - Too brief or verbose",
-            "0.0-0.4 or 2.0+": "Poor - Severely wrong length"
-        }
-    },
-    
-    # Retrieval Metrics
-    "retrieval_accuracy": {
-        "name": "Retrieval Accuracy",
-        "formula": "Queries with correct doc retrieved / Total queries",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Proportion of queries where at least one correct document was retrieved.",
-        "example": "For 100 queries, 85 retrieve at least one correct document → accuracy = 0.85",
-        "when_to_use": "Use for evaluating document retrieval or RAG systems",
-        "limitations": "Binary - doesn't distinguish between retrieving 1 vs all correct docs",
-        "interpretation": {
-            "0.9-1.0": "Excellent - Retrieves correctly almost always",
-            "0.7-0.9": "Good - Usually retrieves correct documents",
-            "0.5-0.7": "Fair - Often fails to retrieve correctly",
-            "0.0-0.5": "Poor - Rarely retrieves correct documents"
-        }
-    },
-    
-    "mrr": {
-        "name": "Mean Reciprocal Rank (MRR)",
-        "formula": "Average of 1/rank where rank = position of first correct result",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Measures how high the first correct result appears in rankings. Focuses on top results.",
-        "example": "If correct doc is rank 1,3,2 for 3 queries: MRR = (1/1 + 1/3 + 1/2) / 3 = 0.61",
-        "when_to_use": "Use when position of first correct result matters (e.g., search engines)",
-        "limitations": "Only considers first correct result, ignores others",
-        "interpretation": {
-            "0.8-1.0": "Excellent - Correct result usually at top",
-            "0.6-0.8": "Good - Correct result in top few",
-            "0.4-0.6": "Fair - Correct result often buried",
-            "0.0-0.4": "Poor - Correct result rarely near top"
-        }
-    },
-    
-    "ndcg": {
-        "name": "Normalized Discounted Cumulative Gain",
-        "formula": "DCG / Ideal DCG (where DCG = Σ relevance / log2(rank+1))",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Measures ranking quality with position-based discounting. Values top results more.",
-        "example": "Perfect ranking gets 1.0, worse rankings get progressively lower scores",
-        "when_to_use": "Use when multiple relevant docs exist and ranking matters",
-        "limitations": "Requires relevance scores, not just binary labels",
-        "interpretation": {
-            "0.9-1.0": "Excellent - Near-perfect ranking",
-            "0.7-0.9": "Good - Strong ranking quality",
-            "0.5-0.7": "Fair - Moderate ranking quality",
-            "0.0-0.5": "Poor - Poor ranking"
-        }
-    },
-    
-    "precision_at_1": {
-        "name": "Precision@1",
-        "formula": "Relevant docs in top 1 result / 1",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Proportion of queries where the top result is relevant. Critical for search engines.",
-        "example": "If 85 of 100 top results are relevant, P@1 = 0.85",
-        "when_to_use": "Use when only the first result matters (like web search)",
-        "limitations": "Ignores all results beyond rank 1",
-        "interpretation": {
-            "0.9-1.0": "Excellent - Top result almost always correct",
-            "0.7-0.9": "Good - Top result usually correct",
-            "0.5-0.7": "Fair - Top result correct half the time",
-            "0.0-0.5": "Poor - Top result rarely correct"
-        }
-    },
-    
-    "precision_at_3": {
-        "name": "Precision@3",
-        "formula": "Relevant docs in top 3 results / 3",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Proportion of top 3 results that are relevant. Balances precision and coverage.",
-        "example": "If 2 of top 3 results are relevant per query on average, P@3 = 0.67",
-        "when_to_use": "Use when users typically look at top few results",
-        "limitations": "Assumes all positions equally important",
-        "interpretation": {
-            "0.8-1.0": "Excellent - Top results very relevant",
-            "0.6-0.8": "Good - Most top results relevant",
-            "0.4-0.6": "Fair - Mixed quality in top results",
-            "0.0-0.4": "Poor - Top results mostly irrelevant"
-        }
-    },
-    
-    "precision_at_5": {
-        "name": "Precision@5",
-        "formula": "Relevant docs in top 5 results / 5",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Proportion of top 5 results that are relevant. Standard metric for search quality.",
-        "example": "If 4 of top 5 results are relevant per query on average, P@5 = 0.80",
-        "when_to_use": "Use for typical search scenarios where users scan first page",
-        "limitations": "Treats all 5 positions equally",
-        "interpretation": {
-            "0.8-1.0": "Excellent - Top 5 very relevant",
-            "0.6-0.8": "Good - Most top 5 relevant",
-            "0.4-0.6": "Fair - Mixed quality",
-            "0.0-0.4": "Poor - Top 5 mostly irrelevant"
-        }
-    },
-    
-    "recall_at_1": {
-        "name": "Recall@1",
-        "formula": "Relevant docs found in top 1 / Total relevant docs",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Proportion of all relevant documents found in the top result. Strict coverage metric.",
-        "example": "If there are 5 relevant docs and top 1 contains 1, R@1 = 0.2",
-        "when_to_use": "Use when finding at least some relevant items in position 1 matters",
-        "limitations": "Very strict - only looks at first result",
-        "interpretation": {
-            "0.7-1.0": "Excellent - First result often covers multiple relevant docs",
-            "0.5-0.7": "Good - First result usually finds something relevant",
-            "0.3-0.5": "Fair - First result finds some relevant items",
-            "0.0-0.3": "Poor - First result rarely finds relevant items"
-        }
-    },
-    
-    "recall_at_3": {
-        "name": "Recall@3",
-        "formula": "Relevant docs found in top 3 / Total relevant docs",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Proportion of all relevant documents found in top 3 results.",
-        "example": "If there are 5 relevant docs total and top 3 contains 3 of them, R@3 = 0.6",
-        "when_to_use": "Use when you need to find most relevant items quickly",
-        "limitations": "Doesn't penalize irrelevant results in top 3",
-        "interpretation": {
-            "0.8-1.0": "Excellent - Finds most relevant docs quickly",
-            "0.6-0.8": "Good - Finds many relevant docs in top results",
-            "0.4-0.6": "Fair - Misses many relevant docs",
-            "0.0-0.4": "Poor - Most relevant docs not in top results"
-        }
-    },
-    
-    "recall_at_5": {
-        "name": "Recall@5",
-        "formula": "Relevant docs found in top 5 / Total relevant docs",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Proportion of all relevant documents found in top 5 results.",
-        "example": "If there are 5 relevant docs and all appear in top 5, R@5 = 1.0",
-        "when_to_use": "Use when coverage in first page of results is important",
-        "limitations": "Doesn't consider ranking quality within top 5",
-        "interpretation": {
-            "0.9-1.0": "Excellent - Nearly complete coverage in top 5",
-            "0.7-0.9": "Good - Most relevant docs in top 5",
-            "0.5-0.7": "Fair - Some relevant docs missed",
-            "0.0-0.5": "Poor - Many relevant docs not in top 5"
-        }
-    },
-    
-    "partial_precision": {
-        "name": "Partial Precision (NER)",
-        "formula": "Entities with boundary overlap / Predicted entities",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Precision with relaxed boundary matching. Gives credit if entity overlaps with ground truth.",
-        "example": "Extracting 'New York' when ground truth is 'New York City' counts as partial match",
-        "when_to_use": "Use when approximate entity extraction is acceptable",
-        "limitations": "May be too lenient for precise extraction needs",
-        "interpretation": {
-            "0.9-1.0": "Excellent - Nearly all predictions overlap correctly",
-            "0.7-0.9": "Good - Most predictions overlap",
-            "0.5-0.7": "Fair - Many boundary issues",
-            "0.0-0.5": "Poor - Weak entity detection"
-        }
-    },
-    
-    "partial_recall": {
-        "name": "Partial Recall (NER)",
-        "formula": "Entities with boundary overlap / True entities",
-        "range": "0.0 - 1.0 (higher is better)",
-        "description": "Recall with relaxed boundary matching. Credit for finding approximate entity locations.",
-        "example": "Finding 8 of 10 entities with approximate boundaries → partial recall = 0.8",
-        "when_to_use": "Use when finding entity presence is more important than exact boundaries",
-        "limitations": "Doesn't ensure precise extraction",
-        "interpretation": {
-            "0.9-1.0": "Excellent - Finds nearly all entities approximately",
-            "0.7-0.9": "Good - Finds most entities",
-            "0.5-0.7": "Fair - Misses many entities",
-            "0.0-0.5": "Poor - Misses most entities"
-        }
-    },
-    
     # Micro-averaged metrics
     "micro_f1": {
         "name": "Micro-averaged F1",
@@ -441,23 +79,376 @@ METRICS_CATALOG = {
             "0.9-1.0": "Excellent - Strong overall performance",
             "0.7-0.9": "Good - Good aggregate performance",
             "0.5-0.7": "Fair - Moderate aggregate performance",
-            "0.0-0.5": "Poor - Weak overall"
-        }
-    }
-}
-
-
-def get_metric_info(metric_name: str) -> dict:
-    """Get information about a specific metric"""
-    return METRICS_CATALOG.get(metric_name, {
-        "name": metric_name.replace("_", " ").title(),
-        "description": "Metric information not available",
-        "range": "Unknown",
-        "formula": "Unknown"
-    })
-
-
-    # Multilingual Metrics
+            "0.0-0.5": "Poor - Weak overall",
+        },
+    },
+    "micro_precision": {
+        "name": "Micro-averaged Precision",
+        "formula": "Total TP / (Total TP + Total FP)",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Precision computed by pooling predictions across all classes. Dominated by frequent classes.",
+        "example": "If most errors come from minority classes, micro precision may still look high.",
+        "when_to_use": "Use when you care most about overall positive prediction quality, not per-class balance",
+        "limitations": "Can mask poor precision on rare classes.",
+        "interpretation": {
+            "0.9-1.0": "Excellent overall precision",
+            "0.7-0.9": "Good overall precision",
+            "0.5-0.7": "Fair",
+            "0.0-0.5": "Poor",
+        },
+    },
+    "micro_recall": {
+        "name": "Micro-averaged Recall",
+        "formula": "Total TP / (Total TP + Total FN)",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Recall computed by pooling instances across all classes. Dominated by frequent classes.",
+        "example": "If model rarely finds minority class positives, micro recall may still look ok if majority class dominates.",
+        "when_to_use": "Use when aggregate recall is more important than per-class recall.",
+        "limitations": "Can hide poor recall on minority classes.",
+        "interpretation": {
+            "0.9-1.0": "Excellent overall recall",
+            "0.7-0.9": "Good overall recall",
+            "0.5-0.7": "Fair",
+            "0.0-0.5": "Poor",
+        },
+    },
+    # Q&A Metrics
+    "exact_match": {
+        "name": "Exact Match (EM)",
+        "formula": "1 if prediction == answer else 0 (normalized)",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Percentage of predictions that exactly match the ground truth after normalization (lowercase, punctuation removal).",
+        "example": "Question: 'Who wrote Hamlet?' Answer: 'Shakespeare' vs 'William Shakespeare' = no match",
+        "when_to_use": "Use for factual questions where precision is critical",
+        "limitations": "Very strict - doesn't give credit for partial correctness or synonyms",
+        "interpretation": {
+            "0.8-1.0": "Excellent - Model answers very precisely",
+            "0.6-0.8": "Good - Model usually gets exact answer",
+            "0.4-0.6": "Fair - Model often close but not exact",
+            "0.0-0.4": "Poor - Model rarely matches exactly",
+        },
+    },
+    "token_f1": {
+        "name": "Token-level F1",
+        "formula": "F1 computed on word overlap between prediction and answer",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Measures word-level overlap between prediction and ground truth. More lenient than Exact Match.",
+        "example": "Answer: 'New York City', Prediction: 'New York' → F1 = 0.8 (2 of 3 words match)",
+        "when_to_use": "Use when partial credit should be given for partially correct answers",
+        "limitations": "Doesn't understand semantics - 'car' and 'automobile' get no credit",
+        "interpretation": {
+            "0.8-1.0": "Excellent - High word overlap with answers",
+            "0.6-0.8": "Good - Decent word overlap",
+            "0.4-0.6": "Fair - Moderate overlap",
+            "0.0-0.4": "Poor - Little overlap with correct answers",
+        },
+    },
+    # NER Metrics (strict)
+    "ner_precision": {
+        "name": "NER Precision",
+        "formula": "Correct Entities / Predicted Entities",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Of all entities extracted, what proportion are correct? Entity must match both span (start/end) and type.",
+        "example": "Model predicts 10 entities, 8 are correct → precision = 0.8",
+        "when_to_use": "Use when false positive entities are problematic",
+        "limitations": "Doesn't penalize missed entities. Very strict on boundaries.",
+        "interpretation": {
+            "0.9-1.0": "Excellent - Very few spurious entities",
+            "0.7-0.9": "Good - Most predictions are valid entities",
+            "0.5-0.7": "Fair - Many false positive entities",
+            "0.0-0.5": "Poor - Most predictions are incorrect",
+        },
+    },
+    "ner_recall": {
+        "name": "NER Recall",
+        "formula": "Correct Entities / True Entities",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Of all true entities in text, what proportion did we find? Both span and type must match.",
+        "example": "Text has 10 entities, model finds 7 correctly → recall = 0.7",
+        "when_to_use": "Use when missing entities is problematic",
+        "limitations": "Doesn't penalize false positives. Requires exact span match.",
+        "interpretation": {
+            "0.9-1.0": "Excellent - Finds nearly all entities",
+            "0.7-0.9": "Good - Finds most entities",
+            "0.5-0.7": "Fair - Misses many entities",
+            "0.0-0.5": "Poor - Misses most entities",
+        },
+    },
+    "ner_f1": {
+        "name": "NER F1 Score",
+        "formula": "2 × (Precision × Recall) / (Precision + Recall)",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Harmonic mean of NER precision and recall. Standard metric for entity extraction.",
+        "example": "NER precision=0.85, recall=0.80 → F1 = 0.824",
+        "when_to_use": "Standard metric for comparing NER systems. Balances finding vs accuracy.",
+        "limitations": "Requires exact span + type match. Doesn't give partial credit.",
+        "interpretation": {
+            "0.9-1.0": "Excellent - State-of-the-art performance",
+            "0.8-0.9": "Good - Strong entity extraction",
+            "0.6-0.8": "Fair - Moderate performance",
+            "0.0-0.6": "Poor - Weak entity extraction",
+        },
+    },
+    # Advanced Classification Metrics
+    "balanced_accuracy": {
+        "name": "Balanced Accuracy",
+        "formula": "Average of per-class recall",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Average recall across all classes. Unlike regular accuracy, this metric handles class imbalance well by treating all classes equally.",
+        "example": "For imbalanced data with 90% class A and 10% class B: If model gets 95% on A but 30% on B, balanced accuracy = (0.95 + 0.30) / 2 = 0.625",
+        "when_to_use": "Use for imbalanced datasets where minority classes are important",
+        "limitations": "May not reflect real-world performance if class distributions matter",
+        "interpretation": {
+            "0.8-1.0": "Excellent - Performs well across all classes",
+            "0.6-0.8": "Good - Decent performance on all classes",
+            "0.4-0.6": "Fair - Struggles with some classes",
+            "0.0-0.4": "Poor - Fails on multiple classes",
+        },
+    },
+    "cohens_kappa": {
+        "name": "Cohen's Kappa",
+        "formula": "(p_observed - p_expected) / (1 - p_expected)",
+        "range": "-1.0 - 1.0 (higher is better, 0 = random)",
+        "description": "Measures agreement beyond chance. Accounts for possibility of correct predictions by random guessing.",
+        "example": "Kappa of 0.8 means model is 80% better than random guessing",
+        "when_to_use": "Use when you want to know if model is truly learning or just guessing",
+        "limitations": "Can be influenced by prevalence and bias in predictions",
+        "interpretation": {
+            "0.8-1.0": "Excellent - Almost perfect agreement",
+            "0.6-0.8": "Good - Substantial agreement",
+            "0.4-0.6": "Fair - Moderate agreement",
+            "0.0-0.4": "Poor - Slight to no agreement beyond chance",
+        },
+    },
+    "matthews_corr": {
+        "name": "Matthews Correlation Coefficient (MCC)",
+        "formula": "(TP×TN - FP×FN) / sqrt((TP+FP)(TP+FN)(TN+FP)(TN+FN))",
+        "range": "-1.0 - 1.0 (higher is better, 0 = random)",
+        "description": "Correlation between predicted and true classifications. Works well even for imbalanced datasets.",
+        "example": "MCC of 0.9 indicates very strong correlation between predictions and truth",
+        "when_to_use": "Best metric for binary classification, especially with class imbalance",
+        "limitations": "Only available for binary classification",
+        "interpretation": {
+            "0.8-1.0": "Excellent - Very strong correlation",
+            "0.6-0.8": "Good - Strong correlation",
+            "0.4-0.6": "Fair - Moderate correlation",
+            "0.0-0.4": "Poor - Weak correlation, barely better than random",
+        },
+    },
+    # Advanced NER Metrics
+    "partial_f1": {
+        "name": "Partial Match F1",
+        "formula": "F1 with relaxed boundary matching",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "F1 score that gives credit for partially correct entity boundaries. More lenient than strict F1.",
+        "example": "Predicting 'New York' when answer is 'New York City' gets partial credit",
+        "when_to_use": "Use when approximate entity boundaries are acceptable",
+        "limitations": "May be too lenient for applications requiring precise extraction",
+        "interpretation": {
+            "0.9-1.0": "Excellent - Very accurate entity detection",
+            "0.7-0.9": "Good - Most entities approximately correct",
+            "0.5-0.7": "Fair - Many boundary issues",
+            "0.0-0.5": "Poor - Weak entity detection",
+        },
+    },
+    "partial_precision": {
+        "name": "Partial Precision (NER)",
+        "formula": "Entities with boundary overlap / Predicted entities",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Precision with relaxed boundary matching. Gives credit if entity overlaps with ground truth.",
+        "example": "Extracting 'New York' when ground truth is 'New York City' counts as partial match",
+        "when_to_use": "Use when approximate entity extraction is acceptable",
+        "limitations": "May be too lenient for precise extraction needs",
+        "interpretation": {
+            "0.9-1.0": "Excellent - Nearly all predictions overlap correctly",
+            "0.7-0.9": "Good - Most predictions overlap",
+            "0.5-0.7": "Fair - Many boundary issues",
+            "0.0-0.5": "Poor - Weak entity detection",
+        },
+    },
+    "partial_recall": {
+        "name": "Partial Recall (NER)",
+        "formula": "Entities with boundary overlap / True entities",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Recall with relaxed boundary matching. Credit for finding approximate entity locations.",
+        "example": "Finding 8 of 10 entities with approximate boundaries → partial recall = 0.8",
+        "when_to_use": "Use when finding entity presence is more important than exact boundaries",
+        "limitations": "Doesn't ensure precise extraction",
+        "interpretation": {
+            "0.9-1.0": "Excellent - Finds nearly all entities approximately",
+            "0.7-0.9": "Good - Finds most entities",
+            "0.5-0.7": "Fair - Misses many entities",
+            "0.0-0.5": "Poor - Misses most entities",
+        },
+    },
+    # Advanced Q&A Metrics
+    "bleu": {
+        "name": "BLEU Score",
+        "formula": "Modified n-gram precision with brevity penalty",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Measures n-gram overlap between prediction and reference. Originally for machine translation, useful for answer similarity.",
+        "example": "Answer: 'The cat sat on the mat', Prediction: 'The cat on the mat' → BLEU considers word overlap",
+        "when_to_use": "Use when word choice and phrasing matter, not just content",
+        "limitations": "Focuses on surface form, doesn't understand semantics",
+        "interpretation": {
+            "0.7-1.0": "Excellent - Very similar wording",
+            "0.5-0.7": "Good - Decent word overlap",
+            "0.3-0.5": "Fair - Some shared words",
+            "0.0-0.3": "Poor - Little word overlap",
+        },
+    },
+    "answer_length_ratio": {
+        "name": "Answer Length Ratio",
+        "formula": "Predicted length / True answer length",
+        "range": "0.0+ (1.0 is ideal)",
+        "description": "Ratio of predicted answer length to ground truth length. Values >1 mean too verbose, <1 mean too brief.",
+        "example": "True answer: 5 words, Prediction: 10 words → ratio = 2.0 (too long)",
+        "when_to_use": "Use to detect if model is over-generating or under-generating",
+        "limitations": "Doesn't measure correctness, only length appropriateness",
+        "interpretation": {
+            "0.8-1.2": "Excellent - Appropriate length",
+            "0.6-0.8 or 1.2-1.5": "Good - Slightly off",
+            "0.4-0.6 or 1.5-2.0": "Fair - Too brief or verbose",
+            "0.0-0.4 or 2.0+": "Poor - Severely wrong length",
+        },
+    },
+    # Retrieval Metrics
+    "retrieval_accuracy": {
+        "name": "Retrieval Accuracy",
+        "formula": "Queries with correct doc retrieved / Total queries",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Proportion of queries where at least one correct document was retrieved.",
+        "example": "For 100 queries, 85 retrieve at least one correct document → accuracy = 0.85",
+        "when_to_use": "Use for evaluating document retrieval or RAG systems",
+        "limitations": "Binary - doesn't distinguish between retrieving 1 vs all correct docs",
+        "interpretation": {
+            "0.9-1.0": "Excellent - Retrieves correctly almost always",
+            "0.7-0.9": "Good - Usually retrieves correct documents",
+            "0.5-0.7": "Fair - Often fails to retrieve correctly",
+            "0.0-0.5": "Poor - Rarely retrieves correct documents",
+        },
+    },
+    "mrr": {
+        "name": "Mean Reciprocal Rank (MRR)",
+        "formula": "Average of 1/rank where rank = position of first correct result",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Measures how high the first correct result appears in rankings. Focuses on top results.",
+        "example": "If correct doc is rank 1,3,2 for 3 queries: MRR = (1/1 + 1/3 + 1/2) / 3 = 0.61",
+        "when_to_use": "Use when position of first correct result matters (e.g., search engines)",
+        "limitations": "Only considers first correct result, ignores others",
+        "interpretation": {
+            "0.8-1.0": "Excellent - Correct result usually at top",
+            "0.6-0.8": "Good - Correct result in top few",
+            "0.4-0.6": "Fair - Correct result often buried",
+            "0.0-0.4": "Poor - Correct result rarely near top",
+        },
+    },
+    "ndcg": {
+        "name": "Normalized Discounted Cumulative Gain",
+        "formula": "DCG / Ideal DCG (where DCG = Σ relevance / log2(rank+1))",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Measures ranking quality with position-based discounting. Values top results more.",
+        "example": "Perfect ranking gets 1.0, worse rankings get progressively lower scores",
+        "when_to_use": "Use when multiple relevant docs exist and ranking matters",
+        "limitations": "Requires relevance scores, not just binary labels",
+        "interpretation": {
+            "0.9-1.0": "Excellent - Near-perfect ranking",
+            "0.7-0.9": "Good - Strong ranking quality",
+            "0.5-0.7": "Fair - Moderate ranking quality",
+            "0.0-0.5": "Poor - Poor ranking",
+        },
+    },
+    "precision_at_1": {
+        "name": "Precision@1",
+        "formula": "Relevant docs in top 1 result / 1",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Proportion of queries where the top result is relevant. Critical for search engines.",
+        "example": "If 85 of 100 top results are relevant, P@1 = 0.85",
+        "when_to_use": "Use when only the first result matters (like web search)",
+        "limitations": "Ignores all results beyond rank 1",
+        "interpretation": {
+            "0.9-1.0": "Excellent - Top result almost always correct",
+            "0.7-0.9": "Good - Top result usually correct",
+            "0.5-0.7": "Fair - Top result correct half the time",
+            "0.0-0.5": "Poor - Top result rarely correct",
+        },
+    },
+    "precision_at_3": {
+        "name": "Precision@3",
+        "formula": "Relevant docs in top 3 results / 3",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Proportion of top 3 results that are relevant. Balances precision and coverage.",
+        "example": "If 2 of top 3 results are relevant per query on average, P@3 = 0.67",
+        "when_to_use": "Use when users typically look at top few results",
+        "limitations": "Assumes all positions equally important",
+        "interpretation": {
+            "0.8-1.0": "Excellent - Top results very relevant",
+            "0.6-0.8": "Good - Most top results relevant",
+            "0.4-0.6": "Fair - Mixed quality in top results",
+            "0.0-0.4": "Poor - Top results mostly irrelevant",
+        },
+    },
+    "precision_at_5": {
+        "name": "Precision@5",
+        "formula": "Relevant docs in top 5 results / 5",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Proportion of top 5 results that are relevant. Standard metric for search quality.",
+        "example": "If 4 of top 5 results are relevant per query on average, P@5 = 0.80",
+        "when_to_use": "Use for typical search scenarios where users scan first page",
+        "limitations": "Treats all 5 positions equally",
+        "interpretation": {
+            "0.8-1.0": "Excellent - Top 5 very relevant",
+            "0.6-0.8": "Good - Most top 5 relevant",
+            "0.4-0.6": "Fair - Mixed quality",
+            "0.0-0.4": "Poor - Top 5 mostly irrelevant",
+        },
+    },
+    "recall_at_1": {
+        "name": "Recall@1",
+        "formula": "Relevant docs found in top 1 / Total relevant docs",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Proportion of all relevant documents found in the top result. Strict coverage metric.",
+        "example": "If there are 5 relevant docs and top 1 contains 1, R@1 = 0.2",
+        "when_to_use": "Use when finding at least some relevant items in position 1 matters",
+        "limitations": "Very strict - only looks at first result",
+        "interpretation": {
+            "0.7-1.0": "Excellent - First result often covers multiple relevant docs",
+            "0.5-0.7": "Good - First result usually finds something relevant",
+            "0.3-0.5": "Fair - First result finds some relevant items",
+            "0.0-0.3": "Poor - First result rarely finds relevant items",
+        },
+    },
+    "recall_at_3": {
+        "name": "Recall@3",
+        "formula": "Relevant docs found in top 3 / Total relevant docs",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Proportion of all relevant documents found in top 3 results.",
+        "example": "If there are 5 relevant docs total and top 3 contains 3 of them, R@3 = 0.6",
+        "when_to_use": "Use when you need to find most relevant items quickly",
+        "limitations": "Doesn't penalize irrelevant results in top 3",
+        "interpretation": {
+            "0.8-1.0": "Excellent - Finds most relevant docs quickly",
+            "0.6-0.8": "Good - Finds many relevant docs in top results",
+            "0.4-0.6": "Fair - Misses many relevant docs",
+            "0.0-0.4": "Poor - Most relevant docs not in top results",
+        },
+    },
+    "recall_at_5": {
+        "name": "Recall@5",
+        "formula": "Relevant docs found in top 5 / Total relevant docs",
+        "range": "0.0 - 1.0 (higher is better)",
+        "description": "Proportion of all relevant documents found in top 5 results.",
+        "example": "If there are 5 relevant docs and all appear in top 5, R@5 = 1.0",
+        "when_to_use": "Use when coverage in first page of results is important",
+        "limitations": "Doesn't consider ranking quality within top 5",
+        "interpretation": {
+            "0.9-1.0": "Excellent - Nearly complete coverage in top 5",
+            "0.7-0.9": "Good - Most relevant docs in top 5",
+            "0.5-0.7": "Fair - Some relevant docs missed",
+            "0.0-0.5": "Poor - Many relevant docs not in top 5",
+        },
+    },
+    # Multilingual / per-language metrics (for advanced breakdowns)
     "per_language_accuracy": {
         "name": "Per-Language Accuracy",
         "formula": "Accuracy computed separately for each language",
@@ -470,10 +461,9 @@ def get_metric_info(metric_name: str) -> dict:
             "0.85-1.0": "Excellent - Strong performance in this language",
             "0.70-0.85": "Good - Decent performance",
             "0.55-0.70": "Fair - Moderate performance",
-            "0.0-0.55": "Poor - Weak performance in this language"
-        }
+            "0.0-0.55": "Poor - Weak performance in this language",
+        },
     },
-    
     "per_language_f1": {
         "name": "Per-Language F1",
         "formula": "F1 score computed separately for each language",
@@ -486,10 +476,9 @@ def get_metric_info(metric_name: str) -> dict:
             "0.85-1.0": "Excellent - Strong language support",
             "0.70-0.85": "Good - Adequate language support",
             "0.55-0.70": "Fair - Weak language support",
-            "0.0-0.55": "Poor - Very weak in this language"
-        }
+            "0.0-0.55": "Poor - Very weak in this language",
+        },
     },
-    
     "cross_lingual_transfer": {
         "name": "Cross-Lingual Transfer Score",
         "formula": "Average performance on non-English languages / English performance",
@@ -502,10 +491,9 @@ def get_metric_info(metric_name: str) -> dict:
             "0.9-1.0": "Excellent - Minimal performance drop across languages",
             "0.7-0.9": "Good - Reasonable transfer",
             "0.5-0.7": "Fair - Significant transfer loss",
-            "0.0-0.5": "Poor - Model fails to transfer to other languages"
-        }
+            "0.0-0.5": "Poor - Model fails to transfer to other languages",
+        },
     },
-    
     "language_variance": {
         "name": "Language Performance Variance",
         "formula": "Standard deviation of scores across languages",
@@ -518,30 +506,46 @@ def get_metric_info(metric_name: str) -> dict:
             "0.0-0.05": "Excellent - Very consistent across languages",
             "0.05-0.10": "Good - Reasonably consistent",
             "0.10-0.20": "Fair - Some languages significantly worse",
-            "0.20+": "Poor - Highly inconsistent performance"
-        }
-    }
+            "0.20+": "Poor - Highly inconsistent performance",
+        },
+    },
 }
 
 
 def get_metric_info(metric_name: str) -> dict:
-    """Get information about a specific metric"""
-    return METRICS_CATALOG.get(metric_name, {
-        "name": metric_name.replace("_", " ").title(),
-        "description": "Metric information not available",
-        "range": "Unknown",
-        "formula": "Unknown"
-    })
+    """Get information about a specific metric."""
+    return METRICS_CATALOG.get(
+        metric_name,
+        {
+            "name": metric_name.replace("_", " ").title(),
+            "description": "Metric information not available",
+            "range": "Unknown",
+            "formula": "Unknown",
+        },
+    )
 
 
 def get_metrics_for_task(task_type: str) -> list:
-    """Get all relevant metrics for a task type"""
+    """Get all relevant metrics for a task type."""
     task_metrics = {
-        "text_classification": ["accuracy", "precision", "recall", "f1", "balanced_accuracy", "cohens_kappa"],
-        "named_entity_recognition": ["f1", "precision", "recall", "partial_f1"],
+        "text_classification": [
+            "accuracy",
+            "precision",
+            "recall",
+            "f1",
+            "balanced_accuracy",
+            "cohens_kappa",
+            "micro_f1",
+        ],
+        "named_entity_recognition": [
+            "f1",
+            "precision",
+            "recall",
+            "partial_f1",
+        ],
         "document_qa": ["exact_match", "token_f1", "bleu"],
         "line_qa": ["exact_match", "token_f1"],
-        "retrieval": ["retrieval_accuracy", "mrr", "precision_at_3", "recall_at_3"]
+        "retrieval": ["retrieval_accuracy", "mrr", "precision_at_3", "recall_at_3"],
     }
     return task_metrics.get(task_type, ["accuracy"])
 

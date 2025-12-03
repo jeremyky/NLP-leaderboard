@@ -80,5 +80,16 @@ export const healthCheck = async () => {
   return response.data;
 };
 
+// Metrics info APIs
+export const getMetricInfo = async (metricName) => {
+  const response = await api.get(`/api/metrics/${metricName}`);
+  return response.data;
+};
+
+export const getTaskMetrics = async (taskType) => {
+  const response = await api.get(`/api/metrics/task/${taskType}`);
+  return response.data;
+};
+
 export default api;
 

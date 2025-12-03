@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { getMetricInfo } from '../services/api';
 
 const MetricInfoModal = ({ metricName, isOpen, onClose }) => {
   const [metricInfo, setMetricInfo] = useState(null);
@@ -14,8 +14,8 @@ const MetricInfoModal = ({ metricName, isOpen, onClose }) => {
   const loadMetricInfo = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:8000/api/metrics/${metricName}`);
-      setMetricInfo(response.data);
+      const info = await getMetricInfo(metricName);
+      setMetricInfo(info);
     } catch (err) {
       console.error('Failed to load metric info:', err);
     } finally {

@@ -1,13 +1,55 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MetricInfoModal from './MetricInfoModal';
 import MultiMetricLeaderboard from './MultiMetricLeaderboard';
 import ModelInsights from './ModelInsights';
 import LanguageBreakdown from './LanguageBreakdown';
 
 const LeaderboardCard = ({ leaderboard }) => {
+  const navigate = useNavigate();
   const [showMetricInfo, setShowMetricInfo] = useState(false);
   const [viewMode, setViewMode] = useState('simple'); // 'simple' or 'detailed'
   const [selectedModel, setSelectedModel] = useState(null);
+  const [comparisonModels, setComparisonModels] = useState([]); // side-by-side comparison
+
+  const toggleCompare = (entry) => {
+    setComparisonModels((prev) => {
+      const exists = prev.find((e) => e.submission_id === entry.submission_id);
+      if (exists) {
+        return prev.filter((e) => e.submission_id !== entry.submission_id);
+      }
+      // Limit to 3 models to keep UI readable
+      if (prev.length >= 3) {
+        return [...prev.slice(1), entry];
+      }
+      return [...prev, entry];
+    });
+  };
+
+  const isInComparison = (entry) =>
+    comparisonModels.some((e) => e.submission_id === entry.submission_id);
+
+  const allComparisonMetrics = Array.from(
+    new Set(
+      comparisonModels.flatMap((m) =>
+        m.detailed_scores ? Object.keys(m.detailed_scores) : []
+      )
+    )
+  ).filter(
+    (metric) =>
+      ![
+        'num_classes',
+        'total_predictions',
+        'true_positives',
+        'false_positives',
+        'false_negatives',
+        'total_questions',
+        'exact_matches_count',
+        'correct_retrievals',
+        'total_queries',
+        'failed_retrievals',
+      ].includes(metric)
+  );
 
   return (
     <>
@@ -64,11 +106,12 @@ const LeaderboardCard = ({ leaderboard }) => {
       
       {viewMode === 'simple' ? (
         <>
-          <div className="grid grid-cols-4 text-white font-bold text-center bg-gray-900 p-4 rounded-t-lg">
+          <div className="grid grid-cols-5 text-white font-bold text-center bg-gray-900 p-4 rounded-t-lg">
             <div>Rank</div>
             <div>Model</div>
             <div>Score</div>
             <div>Last Updated</div>
+            <div>Compare</div>
           </div>
       
           <div>
@@ -77,13 +120,12 @@ const LeaderboardCard = ({ leaderboard }) => {
                 No submissions yet
               </div>
             ) : (
-              leaderboard.entries.map((entry, index) => (
+              leaderboard.entries.slice(0, 5).map((entry, index) => (
                 <div
                   key={entry.submission_id}
-                  className={`grid grid-cols-4 text-center p-4 cursor-pointer ${
+                  className={`grid grid-cols-5 text-center p-4 ${
                     index % 2 === 0 ? 'bg-gray-700 text-white' : 'bg-gray-800 text-white'
                   } hover:bg-gray-600`}
-                  onClick={() => setSelectedModel(entry)}
                 >
                   <div className="flex items-center justify-center">
                     {entry.rank <= 3 && (
@@ -105,10 +147,96 @@ const LeaderboardCard = ({ leaderboard }) => {
                   </div>
                   <div>{entry.score.toFixed(4)}</div>
                   <div className="text-sm text-gray-300">{entry.updated_at}</div>
+                  <div className="flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => toggleCompare(entry)}
+                      className={`px-3 py-1 rounded text-xs border ${
+                        isInComparison(entry)
+                          ? 'bg-blue-600 border-blue-400 text-white'
+                          : 'bg-gray-900 border-gray-600 text-gray-200 hover:bg-gray-800'
+                      }`}
+                    >
+                      {isInComparison(entry) ? 'Selected' : 'Compare'}
+                    </button>
+                  </div>
                 </div>
               ))
             )}
           </div>
+
+          {leaderboard.entries.length > 5 && (
+            <div className="mt-3 flex flex-col md:flex-row md:items-center md:justify-between text-xs text-gray-400 space-y-2 md:space-y-0">
+              <span>
+                Showing top {Math.min(5, leaderboard.entries.length)} of {leaderboard.entries.length} submissions
+              </span>
+              <button
+                type="button"
+                onClick={() => navigate(`/leaderboard/${leaderboard.dataset_id}`)}
+                className="self-start md:self-auto px-3 py-1 bg-gray-800 hover:bg-gray-700 text-white rounded border border-gray-600"
+              >
+                View full leaderboard →
+              </button>
+            </div>
+          )}
+
+          {/* Model comparison section */}
+          {comparisonModels.length >= 2 && (
+            <div className="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-800 overflow-x-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-white">
+                  Model Comparison ({comparisonModels.length} models)
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setComparisonModels([])}
+                  className="text-xs text-gray-300 hover:text-white underline"
+                >
+                  Clear selection
+                </button>
+              </div>
+              <table className="min-w-full text-xs md:text-sm">
+                <thead>
+                  <tr className="bg-gray-800 text-gray-100">
+                    <th className="px-3 py-2 text-left">Metric</th>
+                    {comparisonModels.map((m) => (
+                      <th key={m.submission_id} className="px-3 py-2 text-left">
+                        {m.model_name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Primary score row */}
+                  <tr className="border-t border-gray-800">
+                    <td className="px-3 py-2 font-semibold text-gray-200">
+                      {leaderboard.primary_metric} (primary)
+                    </td>
+                    {comparisonModels.map((m) => (
+                      <td key={m.submission_id} className="px-3 py-2 text-gray-100">
+                        {m.score != null ? m.score.toFixed(4) : '-'}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* Detailed metrics */}
+                  {allComparisonMetrics.map((metric) => (
+                    <tr key={metric} className="border-t border-gray-800">
+                      <td className="px-3 py-2 text-gray-300">
+                        {metric.replace(/_/g, ' ')}
+                      </td>
+                      {comparisonModels.map((m) => (
+                        <td key={m.submission_id} className="px-3 py-2 text-gray-100">
+                          {m.detailed_scores && m.detailed_scores[metric] != null
+                            ? m.detailed_scores[metric].toFixed(4)
+                            : '-'}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </>
       ) : (
         <MultiMetricLeaderboard leaderboard={leaderboard} />

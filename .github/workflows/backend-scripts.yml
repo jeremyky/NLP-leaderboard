@@ -6,6 +6,7 @@ on:
       - "seed_data.py"
       - "finance_datasets.py"
       - "multilingual_datasets.py"
+      - "science_datasets.py"
       - "models.py"
       - "evaluators.py"
       - ".github/workflows/backend-scripts.yml"
@@ -42,5 +43,9 @@ jobs:
       - name: Seed multilingual datasets
         run: |
           python multilingual_datasets.py
+
+      - name: Seed science & code datasets
+        run: |
+          python science_datasets.py
 
 

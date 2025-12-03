@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import CreateDataset from './pages/CreateDataset';
 import Submit from './pages/Submit';
 import DomainBenchmarks from './pages/DomainBenchmarks';
+import SubmissionHistory from './pages/SubmissionHistory';
+import DatasetLeaderboard from './pages/DatasetLeaderboard';
 
 function App() {
   return (
@@ -24,7 +26,7 @@ function App() {
                 </Link>
               </div>
               
-              <div className="flex space-x-4">
+              <div className="flex space-x-3 md:space-x-4">
                 <Link
                   to="/"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
@@ -36,6 +38,12 @@ function App() {
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   Domain-Specific
+                </Link>
+                <Link
+                  to="/history"
+                  className="hidden sm:inline-block text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Submission History
                 </Link>
                 <Link
                   to="/create-dataset"
@@ -60,6 +68,8 @@ function App() {
           <Route path="/domains" element={<DomainBenchmarks />} />
           <Route path="/create-dataset" element={<CreateDataset />} />
           <Route path="/submit" element={<Submit />} />
+          <Route path="/history" element={<SubmissionHistory />} />
+          <Route path="/leaderboard/:datasetId" element={<DatasetLeaderboard />} />
         </Routes>
 
         {/* Footer */}
