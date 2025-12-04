@@ -336,4 +336,19 @@ XNLI_ADVERSARIAL_CASES = [
     {"id": "th_adv_1", "premise": "ทุกคนยกเว้นนัทมาประชุมตรงเวลา.", "hypothesis": "นัทมาประชุมตรงเวลา.", "answer": "contradiction", "language": "th"},
 ]
 
-XNLI_ALL_TEST_CASES = XNLI_STANDARD_CASES + XNLI_EDGE_CASES + XNLI_ADVERSARIAL_CASES
+# Transform to expected format (combine premise + hypothesis into question field)
+def _transform_xnli_case(case):
+    """Convert premise/hypothesis format to question format for evaluator"""
+    return {
+        "id": case["id"],
+        "question": f"Premise: {case['premise']} Hypothesis: {case['hypothesis']}",
+        "answer": case["answer"],
+        "language": case["language"]
+    }
+
+# Export in the format expected by tests
+STANDARD_CASES = [_transform_xnli_case(c) for c in XNLI_STANDARD_CASES]
+EDGE_CASES = [_transform_xnli_case(c) for c in XNLI_EDGE_CASES]
+ADVERSARIAL_CASES = [_transform_xnli_case(c) for c in XNLI_ADVERSARIAL_CASES]
+
+ALL_TEST_CASES = STANDARD_CASES + EDGE_CASES + ADVERSARIAL_CASES
