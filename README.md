@@ -112,6 +112,10 @@ Frontend will be available at `http://localhost:3000`
 
 ## 📚 Documentation
 
+### 🚀 Quick Start Guides
+- **[Deployment Guide](DEPLOYMENT.md)** - Railway + Vercel auto-deployment setup
+- **[Testing & Seeding Guide](TESTING_AND_SEEDING.md)** - Running tests and re-seeding data
+
 ### In-App Documentation
 Visit `/docs` in the frontend (e.g., `http://localhost:3000/docs`) for:
 - API quick reference
@@ -123,6 +127,7 @@ Visit `/docs` in the frontend (e.g., `http://localhost:3000/docs`) for:
 - **[API Reference](docs/API.md)** - Complete API endpoint documentation with examples
 - **[Architecture Overview](docs/ARCHITECTURE.md)** - System design, data flow, and technical decisions
 - **[Contributing Guide](docs/CONTRIBUTING.md)** - Development setup and contribution guidelines
+- **[Test Expansion Guide](docs/TEST_EXPANSION_GUIDE.md)** - Adding comprehensive test cases
 
 ### Interactive API Documentation
 When the backend is running, visit:
