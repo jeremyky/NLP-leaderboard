@@ -52,7 +52,7 @@ SCIENCE_DATASETS: List[Dict] = [
     {
         "name": "Code Reasoning - Small Functions",
         "description": "Simple code generation / reasoning problems inspired by HumanEval-style tasks.",
-        "url": "https://huggingface.co/datasets/openai/humaneval",
+        "url": "https://huggingface.co/datasets/openai_humaneval",
         "task_type": "document_qa",
         "test_set_public": False,
         "labels_public": False,

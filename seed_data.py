@@ -57,7 +57,7 @@ SAMPLE_DATASETS: List[Dict] = [
     {
         "name": "SST-2 - Sentiment Analysis",
         "description": "Stanford Sentiment Treebank - Binary sentiment classification (positive/negative)",
-        "url": "https://huggingface.co/datasets/sst2",
+        "url": "https://huggingface.co/datasets/stanfordnlp/sst2",
         "task_type": "text_classification",
         "test_set_public": False,
         "labels_public": False,
@@ -144,7 +144,7 @@ SAMPLE_DATASETS: List[Dict] = [
     {
         "name": "TruthfulQA - Truthfulness",
         "description": "Measure whether models generate truthful answers to questions that humans might answer falsely due to misconceptions",
-        "url": "https://huggingface.co/datasets/truthful_qa",
+        "url": "https://huggingface.co/datasets/truthfulqa/truthful_qa",
         "task_type": "document_qa",
         "test_set_public": False,
         "labels_public": False,

@@ -115,7 +115,7 @@ FINANCE_DATASETS: List[Dict] = [
     {
         "name": "FinQA - Financial Numerical Reasoning",
         "description": "Question answering requiring numerical reasoning over financial documents.",
-        "url": "https://huggingface.co/datasets/ibm/finqa",
+        "url": "https://huggingface.co/datasets/dreamerdeo/finqa",
         "task_type": "document_qa",
         "test_set_public": False,
         "labels_public": False,

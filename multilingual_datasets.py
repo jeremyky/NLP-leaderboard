@@ -189,7 +189,7 @@ MULTILINGUAL_DATASETS: List[Dict] = [
     {
         "name": "MultiNLI Cross-Lingual - Sentiment & Intent",
         "description": "Natural language inference testing cross-lingual transfer from English training.",
-        "url": "https://huggingface.co/datasets/multi_nli",
+        "url": "https://huggingface.co/datasets/nyu-mll/multi_nli",
         "task_type": "text_classification",
         "test_set_public": False,
         "labels_public": False,
