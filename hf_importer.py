@@ -7,6 +7,8 @@ from typing import Dict, List, Optional
 import requests
 import json
 
+from datasets import load_dataset
+
 
 class HuggingFaceImporter:
     """Import datasets from HuggingFace Hub"""
@@ -57,39 +59,43 @@ class HuggingFaceImporter:
             return None
     
     @staticmethod
-    def sample_dataset(dataset_name: str, config: str = "default", split: str = "test", num_samples: int = 100) -> Optional[List[Dict]]:
+    def sample_dataset(
+        dataset_name: str,
+        config: str = "default",
+        split: str = "test",
+        num_samples: int = 100,
+    ) -> Optional[List[Dict]]:
         """
-        Get sample rows from a HuggingFace dataset
-        
+        Get sample rows from a HuggingFace dataset using the `datasets` library.
+
+        This avoids relying on the older `datasets-server` HTTP API (which can
+        return 4xx/5xx for some configurations) and instead works the same way
+        users typically load datasets locally.
+
         Args:
-            dataset_name: HuggingFace dataset identifier
-            config: Dataset configuration/subset
-            split: Dataset split (train/validation/test)
-            num_samples: Number of samples to fetch
-            
+            dataset_name: HuggingFace dataset identifier (e.g. "ag_news").
+            config: Dataset configuration/subset.
+            split: Dataset split (train/validation/test).
+            num_samples: Number of samples to fetch (capped by split size).
+
         Returns:
-            List of dataset rows
+            List of rows in the same shape as the former HTTP-based helper
+            returned, i.e. each element is a dict with a single `"row"` key.
         """
         try:
-            url = f"https://datasets-server.huggingface.co/rows"
-            params = {
-                "dataset": dataset_name,
-                "config": config,
-                "split": split,
-                "offset": 0,
-                "length": num_samples
-            }
-            
-            response = requests.get(url, params=params, timeout=30)
-            
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("rows", [])
-            else:
-                print(f"Failed to fetch dataset samples: {response.status_code}")
-                return None
+            ds = load_dataset(dataset_name, config, split=split)
         except Exception as e:
-            print(f"Error fetching dataset samples: {e}")
+            print(f"Error loading dataset '{dataset_name}' (config={config}, split={split}): {e}")
+            return None
+
+        try:
+            n = min(num_samples, len(ds))
+            subset = ds.select(range(n))
+            # Match the shape expected by `convert_to_leaderboard_format`, which
+            # previously read from the datasets-server `"rows"` field.
+            return [{"row": dict(row)} for row in subset]
+        except Exception as e:
+            print(f"Error sampling rows from dataset '{dataset_name}': {e}")
             return None
     
     @classmethod

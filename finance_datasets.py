@@ -2,10 +2,23 @@
 Finance-specific datasets from HuggingFace
 
 These are real financial benchmarks for sentiment analysis, Q&A, and NER tasks.
-All datasets are available on HuggingFace Hub.
+All datasets are available on HuggingFace Hub. The base ground-truth lists
+are intentionally small; at seed time we augment them with additional
+examples from ``extra_ground_truth.py`` to make metrics more stable.
 """
 
-FINANCE_DATASETS = [
+from typing import Dict, List
+
+from extra_ground_truth import (
+    FIN_PHRASEBANK_EXTRA,
+    FIQA_OPINION_EXTRA,
+    TWITTER_FIN_SENTIMENT_EXTRA,
+    FIN_QA_EXTRA,
+    FIN_NER_EXTRA,
+)
+
+
+FINANCE_DATASETS: List[Dict] = [
     {
         "name": "Financial PhraseBank - Sentiment Analysis",
         "description": "Financial news sentences labeled with sentiment (positive, negative, neutral). From Malo et al., 2014.",
@@ -162,6 +175,15 @@ FINANCE_DATASETS = [
 ]
 
 
+FINANCE_EXTRA_BY_NAME: Dict[str, List[dict]] = {
+    "Financial PhraseBank - Sentiment Analysis": FIN_PHRASEBANK_EXTRA,
+    "FiQA - Financial Opinion Mining": FIQA_OPINION_EXTRA,
+    "Twitter Financial News - Sentiment": TWITTER_FIN_SENTIMENT_EXTRA,
+    "FinQA - Financial Numerical Reasoning": FIN_QA_EXTRA,
+    "Financial NER - Entity Recognition": FIN_NER_EXTRA,
+}
+
+
 def seed_finance_datasets():
     """Load finance-specific datasets into the database"""
     from database import SessionLocal, init_db
@@ -186,8 +208,14 @@ def seed_finance_datasets():
                 continue
             
             print(f"📊 Creating dataset: {dataset_config['name']}")
-            
-            # Create dataset
+
+            # Merge in any extra ground truth for this finance dataset
+            base_gt = list(dataset_config["ground_truth"])
+            extra_gt = FINANCE_EXTRA_BY_NAME.get(dataset_config["name"])
+            if extra_gt:
+                base_gt.extend(extra_gt)
+
+            # Create dataset with expanded ground truth
             dataset_id = str(uuid.uuid4())
             dataset = Dataset(
                 id=dataset_id,
@@ -199,8 +227,8 @@ def seed_finance_datasets():
                 labels_public=dataset_config["labels_public"],
                 primary_metric=dataset_config["primary_metric"],
                 additional_metrics=dataset_config["additional_metrics"],
-                num_examples=len(dataset_config["ground_truth"]),
-                ground_truth=dataset_config["ground_truth"]
+                num_examples=len(base_gt),
+                ground_truth=base_gt
             )
             db.add(dataset)
             db.flush()
@@ -208,21 +236,21 @@ def seed_finance_datasets():
             # Create baseline submissions
             baseline_models = dataset_config.get("baseline_models", [])
             print(f"   Adding {len(baseline_models)} baseline models...")
-            
+
             # Get evaluator for this dataset
             evaluator = get_evaluator(dataset_config["task_type"])
-            
+
+            from seed_data import create_baseline_predictions
+
             for baseline in baseline_models:
-                from seed_data import create_baseline_predictions
-                
                 submission_id = str(uuid.uuid4())
                 predictions = create_baseline_predictions(
-                    dataset_config["ground_truth"],
+                    base_gt,
                     baseline["score"]
                 )
                 
                 # Actually evaluate the predictions using the evaluator
-                scores = evaluator.evaluate(dataset_config["ground_truth"], predictions)
+                scores = evaluator.evaluate(base_gt, predictions)
                 primary_score = scores.get(dataset_config["primary_metric"], baseline["score"])
                 
                 submission = Submission(

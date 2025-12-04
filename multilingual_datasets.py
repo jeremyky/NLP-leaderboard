@@ -5,7 +5,17 @@ Real multilingual datasets for evaluating cross-lingual capabilities.
 These datasets test models across multiple languages to measure transfer learning.
 """
 
-MULTILINGUAL_DATASETS = [
+from typing import Dict, List
+
+from extra_ground_truth import (
+    XNLI_EN_EXTRA,
+    XNLI_ES_EXTRA,
+    MGSM_EN_EXTRA,
+    MGSM_ES_EXTRA,
+)
+
+
+MULTILINGUAL_DATASETS: List[Dict] = [
     {
         "name": "XNLI - Cross-Lingual Natural Language Inference",
         "description": "Textual entailment in 15 languages. Tests cross-lingual understanding and reasoning.",
@@ -206,6 +216,12 @@ MULTILINGUAL_DATASETS = [
 ]
 
 
+MULTILINGUAL_EXTRA_BY_NAME: Dict[str, List[dict]] = {
+    "XNLI - Cross-Lingual Natural Language Inference": XNLI_EN_EXTRA + XNLI_ES_EXTRA,
+    "MGSM - Multilingual Grade School Math": MGSM_EN_EXTRA + MGSM_ES_EXTRA,
+}
+
+
 def seed_multilingual_datasets():
     """Load multilingual datasets into the database"""
     from database import SessionLocal, init_db
@@ -231,12 +247,18 @@ def seed_multilingual_datasets():
             
             print(f"🌐 Creating dataset: {dataset_config['name']}")
             print(f"   Languages: {', '.join(dataset_config['languages'])}")
-            
+
+            # Merge in any extra multilingual ground truth for this dataset
+            base_gt = list(dataset_config["ground_truth"])
+            extra_gt = MULTILINGUAL_EXTRA_BY_NAME.get(dataset_config["name"])
+            if extra_gt:
+                base_gt.extend(extra_gt)
+
             # Create dataset with language metadata
             dataset_id = str(uuid.uuid4())
-            
+
             # Add languages to ground truth metadata
-            ground_truth_with_meta = dataset_config["ground_truth"]
+            ground_truth_with_meta = base_gt
             
             dataset = Dataset(
                 id=dataset_id,
@@ -248,7 +270,7 @@ def seed_multilingual_datasets():
                 labels_public=dataset_config["labels_public"],
                 primary_metric=dataset_config["primary_metric"],
                 additional_metrics=dataset_config["additional_metrics"],
-                num_examples=len(dataset_config["ground_truth"]),
+                num_examples=len(ground_truth_with_meta),
                 ground_truth=ground_truth_with_meta
             )
             db.add(dataset)
@@ -266,12 +288,12 @@ def seed_multilingual_datasets():
                 
                 submission_id = str(uuid.uuid4())
                 predictions = create_baseline_predictions(
-                    dataset_config["ground_truth"],
+                    ground_truth_with_meta,
                     baseline["score"]
                 )
                 
                 # Actually evaluate the predictions using the evaluator
-                scores = evaluator.evaluate(dataset_config["ground_truth"], predictions)
+                scores = evaluator.evaluate(ground_truth_with_meta, predictions)
                 primary_score = scores.get(dataset_config["primary_metric"], baseline["score"])
                 
                 submission = Submission(

@@ -1,10 +1,17 @@
 """
-Science & reasoning benchmarks from HuggingFace
+Science & reasoning benchmarks from HuggingFace.
 
-These are small, curated samples suitable for seeding and demos.
+These are small, curated samples suitable for seeding and demos. We augment the
+base ground truth with additional examples from ``extra_ground_truth.py`` so
+metrics are computed over more examples.
 """
 
-SCIENCE_DATASETS = [
+from typing import Dict, List
+
+from extra_ground_truth import SCIENCE_QA_EXTRA, CODE_REASONING_EXTRA
+
+
+SCIENCE_DATASETS: List[Dict] = [
     {
         "name": "Science QA - Multiple Choice",
         "description": "Basic science multiple-choice questions for reasoning over grade-school science.",
@@ -73,6 +80,12 @@ SCIENCE_DATASETS = [
 ]
 
 
+SCIENCE_EXTRA_BY_NAME: Dict[str, List[dict]] = {
+    "Science QA - Multiple Choice": SCIENCE_QA_EXTRA,
+    "Code Reasoning - Small Functions": CODE_REASONING_EXTRA,
+}
+
+
 def seed_science_datasets():
     """Load science / code benchmarks into the database."""
     from database import SessionLocal, init_db
@@ -98,6 +111,12 @@ def seed_science_datasets():
 
             print(f"🔬 Creating dataset: {dataset_config['name']}")
 
+            # Merge in any extra science / code ground truth for this dataset
+            base_gt = list(dataset_config["ground_truth"])
+            extra_gt = SCIENCE_EXTRA_BY_NAME.get(dataset_config["name"])
+            if extra_gt:
+                base_gt.extend(extra_gt)
+
             dataset_id = str(uuid.uuid4())
             dataset = Dataset(
                 id=dataset_id,
@@ -109,8 +128,8 @@ def seed_science_datasets():
                 labels_public=dataset_config["labels_public"],
                 primary_metric=dataset_config["primary_metric"],
                 additional_metrics=dataset_config["additional_metrics"],
-                num_examples=len(dataset_config["ground_truth"]),
-                ground_truth=dataset_config["ground_truth"],
+                num_examples=len(base_gt),
+                ground_truth=base_gt,
             )
             db.add(dataset)
             db.flush()
@@ -126,11 +145,11 @@ def seed_science_datasets():
             for baseline in baseline_models:
                 submission_id = str(uuid.uuid4())
                 predictions = create_baseline_predictions(
-                    dataset_config["ground_truth"],
+                    base_gt,
                     baseline["score"],
                 )
 
-                scores = evaluator.evaluate(dataset_config["ground_truth"], predictions)
+                scores = evaluator.evaluate(base_gt, predictions)
                 primary_score = scores.get(dataset_config["primary_metric"], baseline["score"])
 
                 submission = Submission(

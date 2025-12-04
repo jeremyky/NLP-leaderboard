@@ -517,9 +517,9 @@ def get_metric_info(metric_name: str) -> dict:
     return METRICS_CATALOG.get(
         metric_name,
         {
-            "name": metric_name.replace("_", " ").title(),
-            "description": "Metric information not available",
-            "range": "Unknown",
+        "name": metric_name.replace("_", " ").title(),
+        "description": "Metric information not available",
+        "range": "Unknown",
             "formula": "Unknown",
         },
     )

@@ -1,17 +1,30 @@
 """
-Seed script to load sample datasets and baseline model scores
+Seed script to load sample datasets and baseline model scores.
 
 This populates the leaderboard with popular benchmarks and baseline results
-from GPT-4o, Claude, Llama, etc.
+from GPT-4o, Claude, Llama, etc. The core ground-truth examples for each
+dataset are defined in ``SAMPLE_DATASETS`` below. To make metrics less
+coarse and more statistically meaningful, we also have additional synthetic
+examples defined in ``extra_ground_truth.py`` which are merged in at seed
+time.
 """
 from database import SessionLocal, init_db
 from models import Dataset, Submission, TaskType, SubmissionStatus
 from evaluators import get_evaluator
 from datetime import datetime
 import uuid
+from typing import Dict, List
+
+from extra_ground_truth import (
+    AG_NEWS_EXTRA,
+    SST2_EXTRA,
+    IMDB_EXTRA,
+    SQUAD_EXTRA,
+    TRUTHFULQA_EXTRA,
+)
 
 # Sample datasets with ground truth
-SAMPLE_DATASETS = [
+SAMPLE_DATASETS: List[Dict] = [
     {
         "name": "AG News - Text Classification",
         "description": "News article classification into 4 categories: World, Sports, Business, Sci/Tech",
@@ -160,6 +173,15 @@ SAMPLE_DATASETS = [
 ]
 
 
+EXTRA_GROUND_TRUTH_BY_NAME: Dict[str, List[dict]] = {
+    "AG News - Text Classification": AG_NEWS_EXTRA,
+    "SST-2 - Sentiment Analysis": SST2_EXTRA,
+    "IMDB - Movie Review Sentiment": IMDB_EXTRA,
+    "SQuAD - Question Answering": SQUAD_EXTRA,
+    "TruthfulQA - Truthfulness": TRUTHFULQA_EXTRA,
+}
+
+
 def create_baseline_predictions(ground_truth, score):
     """
     Generate predictions based on desired accuracy score
@@ -205,8 +227,14 @@ def seed_database():
                 continue
             
             print(f"📊 Creating dataset: {dataset_config['name']}")
-            
-            # Create dataset
+
+            # Merge in any extra ground truth for this dataset name
+            base_gt = list(dataset_config["ground_truth"])
+            extra_gt = EXTRA_GROUND_TRUTH_BY_NAME.get(dataset_config["name"])
+            if extra_gt:
+                base_gt.extend(extra_gt)
+
+            # Create dataset with expanded ground truth
             dataset_id = str(uuid.uuid4())
             dataset = Dataset(
                 id=dataset_id,
@@ -218,8 +246,8 @@ def seed_database():
                 labels_public=dataset_config["labels_public"],
                 primary_metric=dataset_config["primary_metric"],
                 additional_metrics=dataset_config["additional_metrics"],
-                num_examples=len(dataset_config["ground_truth"]),
-                ground_truth=dataset_config["ground_truth"]
+                num_examples=len(base_gt),
+                ground_truth=base_gt,
             )
             db.add(dataset)
             db.flush()
@@ -234,14 +262,14 @@ def seed_database():
             for baseline in baseline_models:
                 submission_id = str(uuid.uuid4())
                 
-                # Generate predictions based on target score
+                # Generate predictions based on target score and expanded ground truth
                 predictions = create_baseline_predictions(
-                    dataset_config["ground_truth"],
-                    baseline["score"]
+                    base_gt,
+                    baseline["score"],
                 )
-                
+
                 # Actually evaluate the predictions using the evaluator
-                scores = evaluator.evaluate(dataset_config["ground_truth"], predictions)
+                scores = evaluator.evaluate(base_gt, predictions)
                 primary_score = scores.get(dataset_config["primary_metric"], baseline["score"])
                 
                 # Create submission with actual evaluated scores

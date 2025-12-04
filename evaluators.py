@@ -215,8 +215,8 @@ class NEREvaluator(BaseEvaluator):
                     if pred_text and true_text and (
                         pred_text in true_text or true_text in pred_text
                     ):
-                        partial_tp += 1
-                        break
+                                partial_tp += 1
+                                break
         
         partial_precision = partial_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0
         partial_recall = partial_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 0

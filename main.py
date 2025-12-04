@@ -342,7 +342,7 @@ async def get_all_leaderboards(
             raise HTTPException(status_code=400, detail=f"Invalid task_type: {task_type}")
     
     datasets = query.all()
-    leaderboards = []
+    leaderboards: List[LeaderboardResponse] = []
     
     for dataset in datasets:
         # Get completed submissions sorted by score
@@ -370,19 +370,22 @@ async def get_all_leaderboards(
                 "updated_at": updated_month,
                 "is_internal": sub.is_internal,
                 "submission_id": sub.id,
-                "detailed_scores": sub.detailed_scores  # Add detailed scores
+                "detailed_scores": sub.detailed_scores,  # Add detailed scores
             }
             entries.append(entry_data)
         
-        if entries:  # Only include datasets with submissions
-            leaderboards.append(LeaderboardResponse(
-                dataset_id=dataset.id,
-                dataset_name=dataset.name,
-                task_type=dataset.task_type.value,
-                url=dataset.url,
-                primary_metric=dataset.primary_metric,
-                entries=entries
-            ))
+        # Always include the dataset, even if there are no submissions yet.
+        # This ensures that newly imported benchmarks (e.g., from HuggingFace)
+        # are visible in the frontend and can show "0 models" instead of
+        # being entirely hidden.
+        leaderboards.append(LeaderboardResponse(
+            dataset_id=dataset.id,
+            dataset_name=dataset.name,
+            task_type=dataset.task_type.value,
+            url=dataset.url,
+            primary_metric=dataset.primary_metric,
+            entries=entries,
+        ))
     
     return leaderboards
 
