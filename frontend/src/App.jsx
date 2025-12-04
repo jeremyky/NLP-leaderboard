@@ -8,7 +8,8 @@ import SubmissionHistory from './pages/SubmissionHistory';
 import DatasetLeaderboard from './pages/DatasetLeaderboard';
 import Docs from './pages/Docs';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Strip trailing slash to avoid double-slash in URLs
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
 
 function App() {
   return (
