@@ -5,7 +5,7 @@ import MultiMetricLeaderboard from './MultiMetricLeaderboard';
 import ModelInsights from './ModelInsights';
 import LanguageBreakdown from './LanguageBreakdown';
 
-const LeaderboardCard = ({ leaderboard }) => {
+const LeaderboardCard = ({ leaderboard, compact = false }) => {
   const navigate = useNavigate();
   const [showMetricInfo, setShowMetricInfo] = useState(false);
   const [viewMode, setViewMode] = useState('simple'); // 'simple' or 'detailed'
@@ -96,6 +96,97 @@ const LeaderboardCard = ({ leaderboard }) => {
       ].includes(metric)
   );
 
+  // Compact mode for grid view
+  if (compact) {
+    const topThree = leaderboard.entries.slice(0, 3);
+    return (
+      <>
+        <div 
+          className="w-full p-5 bg-gray-950/95 rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.35)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.7)] border border-gray-800/70 hover:border-gray-700 transition-all duration-200 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
+          onClick={() => navigate(`/leaderboard/${leaderboard.dataset_id}`)}
+        >
+          {/* Compact header */}
+          <div className={`rounded-xl bg-gradient-to-r ${headerGradientClass} p-3 mb-4`}>
+            <div className="text-base font-bold text-white flex items-center space-x-2 mb-1.5">
+              <span className="text-lg">{getDatasetIcon(leaderboard.dataset_name)}</span>
+              <span className="truncate">{leaderboard.dataset_name}</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-black/30 text-gray-100">
+                📂 {leaderboard.task_type.replace('_', ' ')}
+              </span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-black/25 text-blue-100">
+                📊 {leaderboard.primary_metric}
+              </span>
+            </div>
+          </div>
+
+          {/* Compact entries */}
+          {topThree.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-8">
+              No submissions yet
+            </div>
+          ) : (
+            <div className="space-y-2 flex-1">
+              {topThree.map((entry) => (
+                <div
+                  key={entry.submission_id}
+                  className="flex items-center justify-between p-3 bg-gray-900/70 rounded-lg border border-white/5 hover:bg-gray-800/80 transition-colors"
+                >
+                  <div className="flex items-center space-x-2 flex-1 min-w-0">
+                    {entry.rank <= 3 && (
+                      <span className="text-base flex-shrink-0">
+                        {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : '🥉'}
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-white truncate">
+                        {entry.model_name}
+                      </div>
+                      {entry.is_internal && (
+                        <span className="text-xs text-blue-300">Internal</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 flex-shrink-0">
+                    {/* Score bar */}
+                    <div className="hidden sm:flex items-center space-x-1.5">
+                      <div className="w-12 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full"
+                          style={{ width: `${Math.min(entry.score * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="text-sm font-mono font-semibold text-emerald-400 min-w-[4rem] text-right">
+                      {entry.score.toFixed(3)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* View more footer */}
+          {leaderboard.entries.length > 3 && (
+            <div className="mt-4 pt-3 border-t border-white/5 text-center">
+              <span className="text-xs text-gray-400">
+                +{leaderboard.entries.length - 3} more models →
+              </span>
+            </div>
+          )}
+        </div>
+
+        <MetricInfoModal
+          metricName={leaderboard.primary_metric}
+          isOpen={showMetricInfo}
+          onClose={() => setShowMetricInfo(false)}
+        />
+      </>
+    );
+  }
+
+  // Full mode for list/single view
   return (
     <>
       <div className="w-full p-4 bg-gray-950/95 rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.35)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.7)] border border-gray-800/70 hover:border-gray-700 transition-transform duration-150 hover:-translate-y-0.5">

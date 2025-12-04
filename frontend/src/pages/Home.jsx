@@ -304,6 +304,7 @@ const Home = () => {
                 <LeaderboardCard
                   key={leaderboard.dataset_id}
                   leaderboard={leaderboard}
+                  compact={true}
                 />
               ))}
             </div>
