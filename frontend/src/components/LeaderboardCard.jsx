@@ -215,45 +215,45 @@ const LeaderboardCard = ({ leaderboard, compact = false }) => {
             </div>
           </div>
           <div className="mt-3 md:mt-0 flex items-center space-x-3">
-            {leaderboard.url && (
-              <a
-                href={leaderboard.url}
+          {leaderboard.url && (
+            <a
+              href={leaderboard.url}
                 className="inline-flex items-center px-3 py-1.5 bg-black/30 hover:bg-black/40 text-sm text-blue-100 hover:text-white rounded-full border border-white/10 transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              target="_blank"
+              rel="noopener noreferrer"
+            >
                 <span className="mr-1">🔗</span>
-                View Dataset
-              </a>
-            )}
-            
-            {/* View Toggle */}
+              View Dataset
+            </a>
+          )}
+          
+          {/* View Toggle */}
             <div className="flex bg-black/30 rounded-full border border-white/10 overflow-hidden text-xs">
-              <button
-                onClick={() => setViewMode('simple')}
+            <button
+              onClick={() => setViewMode('simple')}
                 className={`px-3 py-1 flex items-center space-x-1 ${
                   viewMode === 'simple'
                     ? 'bg-white/20 text-white'
                     : 'text-gray-200 hover:bg-white/10'
                 }`}
-              >
+            >
                 <span className="text-xs">📈</span>
                 <span>Simple</span>
-              </button>
-              <button
-                onClick={() => setViewMode('detailed')}
+            </button>
+            <button
+              onClick={() => setViewMode('detailed')}
                 className={`px-3 py-1 flex items-center space-x-1 ${
                   viewMode === 'detailed'
                     ? 'bg-white/20 text-white'
                     : 'text-gray-200 hover:bg-white/10'
                 }`}
-              >
+            >
                 <span className="text-xs">📊</span>
                 <span>All Metrics</span>
-              </button>
-            </div>
+            </button>
           </div>
         </div>
+      </div>
       
       {viewMode === 'simple' ? (
         <>
@@ -324,7 +324,7 @@ const LeaderboardCard = ({ leaderboard, compact = false }) => {
                     title={`${entry.model_name}${entry.is_internal ? ' • Internal' : ''}`}
                   >
                     <span className="truncate max-w-[9rem] md:max-w-[12rem]">
-                      {entry.model_name}
+                    {entry.model_name}
                     </span>
                     {entry.is_internal && (
                       <span className="px-2 py-0.5 text-[10px] bg-blue-500/20 border border-blue-400/60 rounded-full text-blue-100">
