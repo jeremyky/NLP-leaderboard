@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getDatasets, submitPredictions, getSubmission, getDatasetQuestions } from '../services/api';
 import DetailedMetrics from './DetailedMetrics';
 
@@ -8,7 +8,8 @@ const SubmissionForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     dataset_id: '',
     model_name: '',
-    model_version: '',
+    // Default model_version to today's date for convenience; user can override
+    model_version: new Date().toISOString().slice(0, 10),
     organization: '',
     is_internal: false,
   });
@@ -21,6 +22,10 @@ const SubmissionForm = ({ onSuccess }) => {
   const [questions, setQuestions] = useState(null);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [showQuestions, setShowQuestions] = useState(false);
+  const [jsonUploadName, setJsonUploadName] = useState('');
+  const [jsonText, setJsonText] = useState('');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const statusRef = useRef(null);
 
   useEffect(() => {
     loadDatasets();
@@ -36,6 +41,7 @@ const SubmissionForm = ({ onSuccess }) => {
   };
 
   const handleDatasetChange = async (datasetId) => {
+    setHasUnsavedChanges(true);
     setFormData(prev => ({ ...prev, dataset_id: datasetId }));
     
     const dataset = datasets.find(d => d.id === datasetId);
@@ -91,14 +97,92 @@ const SubmissionForm = ({ onSuccess }) => {
     const updated = [...predictions];
     updated[index][field] = value;
     setPredictions(updated);
+    setHasUnsavedChanges(true);
   };
 
   const addPredictionRow = () => {
     setPredictions([...predictions, { id: '', prediction: '' }]);
+    setHasUnsavedChanges(true);
   };
-
+  
   const removePredictionRow = (index) => {
     setPredictions(predictions.filter((_, i) => i !== index));
+    setHasUnsavedChanges(true);
+  };
+
+  const loadPredictionsFromJson = (text, sourceLabel = 'JSON') => {
+    const parsed = JSON.parse(text);
+
+    // Accept either a raw list of predictions or an object with a predictions field.
+    const maybePredictions = Array.isArray(parsed)
+      ? parsed
+      : Array.isArray(parsed.predictions)
+      ? parsed.predictions
+      : null;
+
+    if (!maybePredictions) {
+      throw new Error(
+        'Invalid JSON format. Expected an array of {id, prediction} objects or { "predictions": [...] }.'
+      );
+    }
+
+    const normalized = maybePredictions.map((p) => ({
+      id: p.id ?? '',
+      // Be lenient: allow either "prediction" or "answer" for convenience.
+      prediction: p.prediction ?? p.answer ?? '',
+    }));
+
+    if (normalized.length === 0) {
+      throw new Error(`${sourceLabel} contains no predictions.`);
+    }
+
+    setPredictions(normalized);
+    setError(null);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleJsonUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result;
+        if (typeof text !== 'string') {
+          throw new Error('Unable to read file contents');
+        }
+
+        loadPredictionsFromJson(text, `File "${file.name}"`);
+        setJsonUploadName(file.name);
+      } catch (err) {
+        console.error('Error parsing predictions JSON file:', err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Failed to parse predictions JSON file.'
+        );
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  const handleJsonPasteLoad = () => {
+    try {
+      if (!jsonText.trim()) {
+        throw new Error('Please paste JSON into the text area first.');
+      }
+      loadPredictionsFromJson(jsonText, 'Pasted JSON');
+      setHasUnsavedChanges(true);
+    } catch (err) {
+      console.error('Error parsing pasted predictions JSON:', err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to parse pasted predictions JSON.'
+      );
+    }
   };
 
   const pollSubmissionStatus = async (subId) => {
@@ -146,9 +230,15 @@ const SubmissionForm = ({ onSuccess }) => {
       const response = await submitPredictions(data);
       const subId = response.data.submission_id;
       setSubmissionId(subId);
+      setHasUnsavedChanges(false);
       
       // Start polling for status
       pollSubmissionStatus(subId);
+
+      // Scroll to the status panel so the user clearly sees the result
+      if (statusRef.current) {
+        statusRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       
       if (onSuccess) onSuccess(response.data);
     } catch (err) {
@@ -169,7 +259,10 @@ const SubmissionForm = ({ onSuccess }) => {
       )}
       
       {submissionId && (
-        <div className="mb-4 p-4 bg-blue-900 border border-blue-700 text-blue-100 rounded">
+        <div
+          ref={statusRef}
+          className="mb-4 p-4 bg-blue-900 border border-blue-700 text-blue-100 rounded"
+        >
           <p className="font-bold mb-2">Submission received!</p>
           <p className="text-sm">Submission ID: {submissionId}</p>
           
@@ -350,7 +443,10 @@ const SubmissionForm = ({ onSuccess }) => {
             <input
               type="text"
               value={formData.model_name}
-              onChange={(e) => setFormData(prev => ({ ...prev, model_name: e.target.value }))}
+              onChange={(e) => {
+                setFormData(prev => ({ ...prev, model_name: e.target.value }));
+                setHasUnsavedChanges(true);
+              }}
               required
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
               placeholder="e.g., GPT-4o"
@@ -364,7 +460,10 @@ const SubmissionForm = ({ onSuccess }) => {
             <input
               type="text"
               value={formData.model_version}
-              onChange={(e) => setFormData(prev => ({ ...prev, model_version: e.target.value }))}
+              onChange={(e) => {
+                setFormData(prev => ({ ...prev, model_version: e.target.value }));
+                setHasUnsavedChanges(true);
+              }}
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
               placeholder="e.g., 2024-11-01"
             />
@@ -377,7 +476,10 @@ const SubmissionForm = ({ onSuccess }) => {
             <input
               type="text"
               value={formData.organization}
-              onChange={(e) => setFormData(prev => ({ ...prev, organization: e.target.value }))}
+              onChange={(e) => {
+                setFormData(prev => ({ ...prev, organization: e.target.value }));
+                setHasUnsavedChanges(true);
+              }}
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
               placeholder="e.g., OpenAI"
             />
@@ -388,7 +490,10 @@ const SubmissionForm = ({ onSuccess }) => {
               <input
                 type="checkbox"
                 checked={formData.is_internal}
-                onChange={(e) => setFormData(prev => ({ ...prev, is_internal: e.target.checked }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, is_internal: e.target.checked }));
+                  setHasUnsavedChanges(true);
+                }}
                 className="w-5 h-5 text-blue-600 bg-gray-800 border-gray-700 rounded focus:ring-blue-500"
               />
               <span className="text-gray-300">Internal Submission</span>
@@ -400,16 +505,59 @@ const SubmissionForm = ({ onSuccess }) => {
         {formData.dataset_id && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium text-white">Predictions *</h3>
-              {!selectedDataset?.test_set_public && (
-                <button
-                  type="button"
-                  onClick={addPredictionRow}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
-                >
-                  + Add Row
-                </button>
-              )}
+              <div className="flex flex-col md:flex-row md:items-center md:space-x-3 space-y-3 md:space-y-0">
+                <h3 className="text-lg font-medium text-white">Predictions *</h3>
+
+                {!selectedDataset?.test_set_public && (
+                  <button
+                    type="button"
+                    onClick={addPredictionRow}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
+                  >
+                    + Add Row
+                  </button>
+                )}
+
+                <div className="flex flex-col space-y-2 md:space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <label className="text-xs text-gray-300">
+                      Or upload JSON:
+                    </label>
+                    <input
+                      type="file"
+                      accept="application/json"
+                      onChange={handleJsonUpload}
+                      className="text-xs text-gray-300"
+                    />
+                    {jsonUploadName && (
+                      <span className="text-xs text-gray-500">
+                        Loaded: {jsonUploadName}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-col space-y-1">
+                    <label className="text-xs text-gray-400">
+                      Or paste JSON here (e.g. {"[{\"id\": \"1\", \"prediction\": \"...\"}]"} or with <code>answer</code>):
+                    </label>
+                    <div className="flex items-start space-x-2">
+                      <textarea
+                        value={jsonText}
+                        onChange={(e) => setJsonText(e.target.value)}
+                        rows={3}
+                        className="flex-1 px-2 py-1 bg-gray-800 border border-gray-700 rounded text-white text-xs font-mono focus:outline-none focus:border-blue-500"
+                        placeholder='{"predictions": [{"id": "1", "answer": "business"}, ...]}'
+                      />
+                      <button
+                        type="button"
+                        onClick={handleJsonPasteLoad}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs h-8 mt-1"
+                      >
+                        Load
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -462,7 +610,7 @@ const SubmissionForm = ({ onSuccess }) => {
               setFormData({
                 dataset_id: '',
                 model_name: '',
-                model_version: '',
+                model_version: new Date().toISOString().slice(0, 10),
                 organization: '',
                 is_internal: false,
               });
@@ -470,6 +618,7 @@ const SubmissionForm = ({ onSuccess }) => {
               setSelectedDataset(null);
               setSubmissionId(null);
               setSubmissionStatus(null);
+              setHasUnsavedChanges(false);
             }}
             className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded"
           >
@@ -477,10 +626,14 @@ const SubmissionForm = ({ onSuccess }) => {
           </button>
           <button
             type="submit"
-            disabled={loading || !formData.dataset_id}
+            disabled={loading || !formData.dataset_id || !hasUnsavedChanges}
             className="px-6 py-2 btn-black rounded disabled:opacity-50"
           >
-            {loading ? 'Submitting...' : 'Submit Predictions'}
+            {loading
+              ? 'Submitting...'
+              : hasUnsavedChanges
+              ? 'Submit Predictions'
+              : 'Submitted'}
           </button>
         </div>
       </form>
