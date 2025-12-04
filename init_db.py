@@ -3,7 +3,10 @@ One-time database initialization script
 
 Checks if database is already seeded and only runs seed scripts if empty.
 Safe to call on every deployment.
+
+Set FORCE_RESEED=true environment variable to force re-seeding.
 """
+import os
 from database import SessionLocal, init_db
 from models import Dataset
 
@@ -23,10 +26,16 @@ def initialize_database():
     print("🔍 CHECKING DATABASE STATUS")
     print("="*60 + "\n")
     
-    if is_database_seeded():
+    force_reseed = os.getenv("FORCE_RESEED", "false").lower() == "true"
+    
+    if is_database_seeded() and not force_reseed:
         print("✅ Database already seeded (found existing datasets)")
-        print("   Skipping initialization.\n")
+        print("   Skipping initialization.")
+        print("   Set FORCE_RESEED=true to force re-seeding.\n")
         return
+    
+    if force_reseed:
+        print("⚠️  FORCE_RESEED=true - Re-seeding database...\n")
     
     print("📦 Database is empty. Running seed scripts...\n")
     
@@ -56,8 +65,22 @@ def initialize_database():
         print("🎉 DATABASE INITIALIZATION COMPLETE")
         print("="*60 + "\n")
         
+        # Print summary
+        db = SessionLocal()
+        try:
+            from models import Submission
+            dataset_count = db.query(Dataset).count()
+            submission_count = db.query(Submission).count()
+            print(f"📊 Summary:")
+            print(f"   - {dataset_count} datasets loaded")
+            print(f"   - {submission_count} baseline submissions created\n")
+        finally:
+            db.close()
+        
     except Exception as e:
         print(f"\n❌ Initialization failed: {e}")
+        import traceback
+        traceback.print_exc()
         raise
 
 if __name__ == "__main__":
