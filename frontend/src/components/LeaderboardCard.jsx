@@ -212,6 +212,28 @@ const LeaderboardCard = ({ leaderboard, compact = false }) => {
                 <span className="mr-1">📊 Metric:</span>
                 <span className="font-semibold">{leaderboard.primary_metric}</span>
               </button>
+              
+              {/* Comprehensive test coverage badge */}
+              {(() => {
+                const testedDatasets = [
+                  "AG News - Text Classification",
+                  "SST-2 - Sentiment Analysis",
+                  "SQuAD - Question Answering",
+                  "XNLI - Cross-Lingual Natural Language Inference"
+                ];
+                if (testedDatasets.includes(leaderboard.dataset_name)) {
+                  return (
+                    <span 
+                      className="inline-flex items-center px-2 py-0.5 rounded-full bg-green-900/40 text-green-300 border border-green-700/50 text-xs"
+                      title="This dataset has 300+ comprehensive test cases validating evaluator correctness"
+                    >
+                      <span className="mr-1">✓</span>
+                      <span>Comprehensive Tests</span>
+                    </span>
+                  );
+                }
+                return null;
+              })()}
             </div>
           </div>
           <div className="mt-3 md:mt-0 flex items-center space-x-3">

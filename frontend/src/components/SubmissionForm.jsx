@@ -327,11 +327,121 @@ const SubmissionForm = ({ onSuccess }) => {
           {selectedDataset && (
             <div className="mt-2 space-y-3">
               {/* Dataset Info */}
-              <div className="p-3 bg-gray-800 rounded text-sm text-gray-300">
+              <div className="p-3 bg-gray-800 rounded text-sm text-gray-300 space-y-1">
                 <p><strong>Task:</strong> {selectedDataset.task_type}</p>
                 <p><strong>Metric:</strong> {selectedDataset.primary_metric}</p>
                 <p><strong>Examples:</strong> {selectedDataset.num_examples}</p>
+                
+                {/* Comprehensive test coverage badge */}
+                {(() => {
+                  const testedDatasets = [
+                    "AG News - Text Classification",
+                    "SST-2 - Sentiment Analysis", 
+                    "SQuAD - Question Answering",
+                    "XNLI - Cross-Lingual Natural Language Inference"
+                  ];
+                  if (testedDatasets.includes(selectedDataset.name)) {
+                    return (
+                      <p className="flex items-center space-x-2 pt-2">
+                        <span className="px-2 py-1 bg-green-900/50 text-green-300 border border-green-700 rounded text-xs font-semibold flex items-center space-x-1">
+                          <span>✓</span>
+                          <span>Comprehensive Test Suite</span>
+                        </span>
+                        <span className="text-xs text-gray-400">(300+ edge cases validated)</span>
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
+
+              {/* Label Specifications */}
+              {selectedDataset.task_type === 'text_classification' && questions?.questions && (
+                <div className="p-4 bg-blue-900/20 border border-blue-800 rounded">
+                  <h4 className="text-white font-semibold mb-2 flex items-center text-sm">
+                    <span className="mr-2">📋</span>
+                    Label Specifications
+                  </h4>
+                  <div className="text-xs space-y-2">
+                    <p className="text-gray-300">
+                      <strong>Available classes:</strong> Your prediction must be EXACTLY one of these labels (case-sensitive):
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {Array.from(new Set(
+                        questions.questions
+                          .map(q => q.answer)
+                          .filter(Boolean)
+                      )).map((cls, idx) => (
+                        <code
+                          key={idx}
+                          className="px-2 py-1 bg-blue-900/50 text-blue-200 rounded border border-blue-700 font-mono"
+                        >
+                          "{cls}"
+                        </code>
+                      ))}
+                    </div>
+                    <p className="text-yellow-300 mt-2">
+                      ⚠️ Predictions with typos or incorrect case will be marked as wrong
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {selectedDataset.task_type === 'named_entity_recognition' && (
+                <div className="p-4 bg-blue-900/20 border border-blue-800 rounded">
+                  <h4 className="text-white font-semibold mb-2 flex items-center text-sm">
+                    <span className="mr-2">📋</span>
+                    NER Label Specifications
+                  </h4>
+                  <div className="text-xs space-y-2 text-gray-300">
+                    <p><strong>Format:</strong> List of [surface_text, entity_type] pairs</p>
+                    <p><strong>Example:</strong></p>
+                    <code className="block bg-gray-900 p-2 rounded text-emerald-400">
+                      [["Apple Inc.", "ORG"], ["$125B", "MONEY"]]
+                    </code>
+                    <p className="text-yellow-300 mt-2">
+                      ⚠️ Spans must match exactly; entity types are case-sensitive
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {(selectedDataset.task_type === 'document_qa' || selectedDataset.task_type === 'line_qa') && (
+                <div className="p-4 bg-blue-900/20 border border-blue-800 rounded">
+                  <h4 className="text-white font-semibold mb-2 flex items-center text-sm">
+                    <span className="mr-2">📋</span>
+                    QA Label Specifications
+                  </h4>
+                  <div className="text-xs space-y-2 text-gray-300">
+                    <p><strong>Format:</strong> String answer (will be normalized)</p>
+                    <p><strong>Normalization:</strong> Case-insensitive, punctuation removed, articles stripped</p>
+                    <p><strong>Example:</strong></p>
+                    <code className="block bg-gray-900 p-2 rounded text-emerald-400">
+                      "Paris" matches "paris", "the Paris", "Paris."
+                    </code>
+                    <p className="text-blue-300 mt-2">
+                      💡 Multiple acceptable answers? Provide the most common/specific one
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {selectedDataset.task_type === 'retrieval' && (
+                <div className="p-4 bg-blue-900/20 border border-blue-800 rounded">
+                  <h4 className="text-white font-semibold mb-2 flex items-center text-sm">
+                    <span className="mr-2">📋</span>
+                    Retrieval Label Specifications
+                  </h4>
+                  <div className="text-xs space-y-2 text-gray-300">
+                    <p><strong>Format:</strong> Array of relevant document IDs (strings)</p>
+                    <p><strong>Ranking:</strong> Order matters (earlier = more relevant)</p>
+                    <p><strong>Example:</strong></p>
+                    <code className="block bg-gray-900 p-2 rounded text-emerald-400">
+                      ["doc_123", "doc_456", "doc_789"]
+                    </code>
+                  </div>
+                </div>
+              )}
 
               {/* Format Example */}
               {questions?.questions?.[0] && (
