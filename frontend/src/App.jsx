@@ -6,6 +6,9 @@ import Submit from './pages/Submit';
 import DomainBenchmarks from './pages/DomainBenchmarks';
 import SubmissionHistory from './pages/SubmissionHistory';
 import DatasetLeaderboard from './pages/DatasetLeaderboard';
+import Docs from './pages/Docs';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function App() {
   return (
@@ -70,6 +73,7 @@ function App() {
           <Route path="/submit" element={<Submit />} />
           <Route path="/history" element={<SubmissionHistory />} />
           <Route path="/leaderboard/:datasetId" element={<DatasetLeaderboard />} />
+          <Route path="/docs" element={<Docs />} />
         </Routes>
 
         {/* Footer */}
@@ -79,13 +83,20 @@ function App() {
               Built by <a href="https://anote.ai" className="text-blue-400 hover:text-blue-300 font-medium">Anote</a>
             </p>
             <p>
+              <Link 
+                to="/docs"
+                className="text-blue-400 hover:text-blue-300"
+              >
+                Documentation
+              </Link>
+              {' | '}
               <a 
-                href="http://localhost:8000/docs" 
+                href={`${API_BASE_URL}/docs`}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-blue-400 hover:text-blue-300"
               >
-                API Documentation
+                API Docs (Interactive)
               </a>
               {' | '}
               <a 

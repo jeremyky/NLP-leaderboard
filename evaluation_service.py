@@ -107,6 +107,20 @@ def evaluate_submission(submission_id: str):
         print(f"  Score: {primary_score} ({dataset.primary_metric})")
         print(f"  All metrics: {scores}")
         
+        # Log evaluation
+        from logger import log_evaluation
+        log_evaluation(
+            submission_id=submission_id,
+            dataset_id=dataset.id,
+            model_name=submission.model_name,
+            score=primary_score,
+            metric=dataset.primary_metric
+        )
+        
+        # Invalidate cache for this dataset's leaderboard
+        from cache import invalidate_leaderboard_cache
+        invalidate_leaderboard_cache(dataset.id)
+        
     except Exception as e:
         # Mark submission as failed
         submission.status = SubmissionStatus.FAILED

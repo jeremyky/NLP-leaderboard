@@ -325,10 +325,74 @@ const SubmissionForm = ({ onSuccess }) => {
           </select>
           
           {selectedDataset && (
-            <div className="mt-2 p-3 bg-gray-800 rounded text-sm text-gray-300">
-              <p><strong>Task:</strong> {selectedDataset.task_type}</p>
-              <p><strong>Metric:</strong> {selectedDataset.primary_metric}</p>
-              <p><strong>Examples:</strong> {selectedDataset.num_examples}</p>
+            <div className="mt-2 space-y-3">
+              {/* Dataset Info */}
+              <div className="p-3 bg-gray-800 rounded text-sm text-gray-300">
+                <p><strong>Task:</strong> {selectedDataset.task_type}</p>
+                <p><strong>Metric:</strong> {selectedDataset.primary_metric}</p>
+                <p><strong>Examples:</strong> {selectedDataset.num_examples}</p>
+              </div>
+
+              {/* Format Example */}
+              {questions?.questions?.[0] && (
+                <div className="p-4 bg-gray-800 rounded border border-gray-700">
+                  <h4 className="text-white font-semibold mb-2 flex items-center">
+                    <span className="mr-2">📝</span>
+                    Prediction Format Example
+                  </h4>
+                  
+                  {/* Show available classes for classification */}
+                  {(selectedDataset.task_type === 'text_classification') && questions.questions && (
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-400 mb-1">Available Classes:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {Array.from(new Set(
+                          questions.questions
+                            .map(q => q.answer)
+                            .filter(Boolean)
+                        )).map((cls, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 bg-blue-900/50 text-blue-300 rounded text-xs border border-blue-700"
+                          >
+                            {cls}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="text-xs">
+                    <p className="text-gray-400 mb-2">Input (from ground truth):</p>
+                    <pre className="bg-gray-900 p-2 rounded overflow-x-auto mb-3 text-gray-300">
+{JSON.stringify(
+  Object.fromEntries(
+    Object.entries(questions.questions[0]).filter(([k]) => k !== 'answer')
+  ),
+  null,
+  2
+)}
+                    </pre>
+                    
+                    <p className="text-gray-400 mb-2">Your prediction should be:</p>
+                    <pre className="bg-gray-900 p-2 rounded overflow-x-auto text-emerald-400">
+{JSON.stringify(
+  {
+    id: questions.questions[0].id,
+    prediction: selectedDataset.task_type === 'named_entity_recognition'
+      ? [["Example Entity", "TYPE"]]
+      : selectedDataset.task_type === 'retrieval'
+      ? ["doc_id_1", "doc_id_2"]
+      : "your_answer_here"
+  },
+  null,
+  2
+)}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
               {!selectedDataset.test_set_public && (
                 <div className="mt-3 space-y-2">
                   <p className="text-yellow-400 flex items-center">

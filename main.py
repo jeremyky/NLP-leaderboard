@@ -1,7 +1,7 @@
 """
 Main FastAPI application for the Leaderboard API
 """
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -18,12 +18,23 @@ from schemas import (
 )
 from evaluators import get_evaluator
 from evaluation_service import evaluate_submission
+from cache import cached_leaderboard, invalidate_leaderboard_cache, get_cache_stats
+from rate_limiter import setup_rate_limiting, RATE_LIMITS
+from logger import logger, log_api_request, log_evaluation, log_error
 
 # Initialize FastAPI app
 app = FastAPI(
     title="Anote Leaderboard API",
     description="API for managing benchmark datasets and model submissions",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    servers=[
+        {"url": "http://localhost:8001", "description": "Local development server (alt port)"},
+        {"url": "http://localhost:8000", "description": "Local development server"},
+        {"url": "/", "description": "Current server"},
+    ]
 )
 
 # CORS middleware for frontend integration
@@ -35,11 +46,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Setup rate limiting
+limiter = setup_rate_limiting(app)
+
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize database on startup"""
     init_db()
+    logger.info("Leaderboard API started successfully")
     print("Leaderboard API started successfully")
 
 
@@ -199,7 +214,9 @@ async def get_dataset_questions(
 # ==================== Submission Endpoints ====================
 
 @app.post("/api/submissions", response_model=SuccessResponse, status_code=202)
+@limiter.limit(RATE_LIMITS["submission"])
 async def submit_predictions(
+    request: Request,
     submission: SubmissionCreate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
@@ -233,8 +250,20 @@ async def submit_predictions(
     db.commit()
     db.refresh(db_submission)
     
+    # Log submission
+    log_api_request(
+        endpoint="/api/submissions",
+        method="POST",
+        submission_id=submission_id,
+        dataset_id=submission.dataset_id,
+        model_name=submission.model_name
+    )
+    
     # Queue evaluation as background task
     background_tasks.add_task(evaluate_submission, submission_id)
+    
+    # Invalidate cache for this dataset
+    invalidate_leaderboard_cache(submission.dataset_id)
     
     return SuccessResponse(
         message="Submission received and queued for evaluation",
@@ -323,7 +352,10 @@ async def list_submissions(
 # ==================== Leaderboard Endpoints ====================
 
 @app.get("/api/leaderboard", response_model=List[LeaderboardResponse])
+@limiter.limit(RATE_LIMITS["leaderboard"])
+@cached_leaderboard
 async def get_all_leaderboards(
+    request: Request,
     task_type: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
@@ -391,7 +423,10 @@ async def get_all_leaderboards(
 
 
 @app.get("/api/leaderboard/{dataset_id}", response_model=LeaderboardResponse)
+@limiter.limit(RATE_LIMITS["leaderboard"])
+@cached_leaderboard
 async def get_dataset_leaderboard(
+    request: Request,
     dataset_id: str,
     include_internal: bool = True,
     db: Session = Depends(get_db)
@@ -444,7 +479,8 @@ async def get_dataset_leaderboard(
 # ==================== Data Management ====================
 
 @app.post("/api/admin/seed-data", response_model=SuccessResponse)
-async def seed_sample_data(db: Session = Depends(get_db)):
+@limiter.limit(RATE_LIMITS["admin"])
+async def seed_sample_data(request: Request, db: Session = Depends(get_db)):
     """
     Load sample datasets and baseline models
     
@@ -523,7 +559,9 @@ async def seed_sample_data(db: Session = Depends(get_db)):
 
 
 @app.post("/api/admin/import-huggingface", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMITS["admin"])
 async def import_from_huggingface(
+    request: Request,
     dataset_name: str,
     config: str = "default",
     split: str = "test",
@@ -618,10 +656,28 @@ async def get_task_metrics(task_type: str):
     return metrics
 
 
-# ==================== Health Check ====================
+# ==================== Health Check & Monitoring ====================
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "service": "leaderboard-api"}
+
+
+@app.get("/api/admin/cache-stats")
+@limiter.limit(RATE_LIMITS["admin"])
+async def get_cache_statistics(request: Request):
+    """Get cache statistics for monitoring"""
+    return get_cache_stats()
+
+
+@app.post("/api/admin/clear-cache")
+@limiter.limit(RATE_LIMITS["admin"])
+async def clear_cache(request: Request, dataset_id: Optional[str] = None):
+    """Clear cache (all or for specific dataset)"""
+    invalidate_leaderboard_cache(dataset_id)
+    return SuccessResponse(
+        message="Cache cleared successfully",
+        data={"dataset_id": dataset_id or "all"}
+    )
 

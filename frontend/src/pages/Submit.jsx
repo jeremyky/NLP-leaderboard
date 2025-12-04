@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import SubmissionForm from '../components/SubmissionForm';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const Submit = () => {
   const navigate = useNavigate();
 
@@ -21,7 +23,7 @@ const Submit = () => {
           </button>
           
           <a
-            href="http://localhost:8000/docs"
+            href={`${API_BASE_URL}/docs`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-400 hover:text-gray-300 text-sm"
