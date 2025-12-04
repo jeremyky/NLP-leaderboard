@@ -30,6 +30,10 @@ const SubmissionHistory = () => {
     }
   };
 
+  const getDatasetInfo = (datasetId) => {
+    return datasets.find(ds => ds.id === datasetId);
+  };
+
   const loadSubmissions = async (nextFilters = filters) => {
     setLoading(true);
     setError(null);
@@ -157,10 +161,10 @@ const SubmissionHistory = () => {
                 <thead className="bg-gray-800 text-gray-200">
                   <tr>
                     <th className="px-4 py-3">Model</th>
-                    <th className="px-4 py-3 hidden md:table-cell">Dataset</th>
+                    <th className="px-4 py-3">Dataset</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Primary Score</th>
-                    <th className="px-4 py-3 hidden md:table-cell">Created</th>
+                    <th className="px-4 py-3 hidden lg:table-cell">Created</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -181,8 +185,35 @@ const SubmissionHistory = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-300 hidden md:table-cell">
-                        {sub.dataset_id}
+                      <td className="px-4 py-3">
+                        {(() => {
+                          const dataset = getDatasetInfo(sub.dataset_id);
+                          if (dataset) {
+                            return (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/leaderboard/${sub.dataset_id}`);
+                                }}
+                                className="text-left hover:text-blue-400 transition-colors"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="text-white font-medium truncate max-w-xs">
+                                    {dataset.name}
+                                  </span>
+                                  <span className="text-xs text-gray-400">
+                                    {dataset.task_type.replace('_', ' ')}
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          }
+                          return (
+                            <span className="text-gray-500 text-xs">
+                              {sub.dataset_id.slice(0, 8)}...
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -202,7 +233,7 @@ const SubmissionHistory = () => {
                           ? sub.primary_score.toFixed(4)
                           : '-'}
                       </td>
-                      <td className="px-4 py-3 text-gray-400 text-xs hidden md:table-cell">
+                      <td className="px-4 py-3 text-gray-400 text-xs hidden lg:table-cell">
                         {sub.created_at
                           ? new Date(sub.created_at).toLocaleString()
                           : '-'}
