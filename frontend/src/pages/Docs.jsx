@@ -5,8 +5,7 @@ const Docs = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('api');
 
-  // Strip trailing slash to avoid double-slash in URLs
-  const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const tabs = [
     { id: 'api', label: 'API Reference', icon: '📡' },

@@ -2,8 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import SubmissionForm from '../components/SubmissionForm';
 
-// Strip trailing slash to avoid double-slash in URLs
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const Submit = () => {
   const navigate = useNavigate();

@@ -52,11 +52,6 @@ SAMPLE_DATASETS: List[Dict] = [
             {"model": "Llama 3.1 70B", "score": 0.91, "version": "instruct", "organization": "Meta"},
             {"model": "Gemini 1.5 Pro", "score": 0.92, "version": "001", "organization": "Google"},
             {"model": "GPT-3.5 Turbo", "score": 0.88, "version": "0125", "organization": "OpenAI"},
-            {"model": "Llama 3.1 405B", "score": 0.94, "version": "instruct", "organization": "Meta"},
-            {"model": "Claude 3 Opus", "score": 0.90, "version": "2024-02-29", "organization": "Anthropic"},
-            {"model": "Mistral Large", "score": 0.89, "version": "latest", "organization": "Mistral AI"},
-            {"model": "Qwen 2.5 72B", "score": 0.87, "version": "instruct", "organization": "Alibaba"},
-            {"model": "Gemini 1.5 Flash", "score": 0.86, "version": "001", "organization": "Google"},
         ]
     },
     {
@@ -86,9 +81,6 @@ SAMPLE_DATASETS: List[Dict] = [
             {"model": "Llama 3.1 70B", "score": 0.94, "version": "instruct", "organization": "Meta"},
             {"model": "BERT-base", "score": 0.93, "version": "uncased", "organization": "Google"},
             {"model": "RoBERTa-base", "score": 0.94, "version": "base", "organization": "Meta"},
-            {"model": "Llama 3.1 405B", "score": 0.96, "version": "instruct", "organization": "Meta"},
-            {"model": "Gemini 1.5 Pro", "score": 0.95, "version": "001", "organization": "Google"},
-            {"model": "DistilBERT", "score": 0.92, "version": "base-uncased", "organization": "HuggingFace"},
         ]
     },
     {
@@ -118,9 +110,6 @@ SAMPLE_DATASETS: List[Dict] = [
             {"model": "Llama 3.1 70B", "score": 0.84, "version": "instruct", "organization": "Meta"},
             {"model": "BERT-large", "score": 0.86, "version": "uncased", "organization": "Google"},
             {"model": "RoBERTa-large", "score": 0.88, "version": "large", "organization": "Meta"},
-            {"model": "Llama 3.1 405B", "score": 0.88, "version": "instruct", "organization": "Meta"},
-            {"model": "Gemini 1.5 Pro", "score": 0.87, "version": "001", "organization": "Google"},
-            {"model": "GPT-4 Turbo", "score": 0.85, "version": "2024-04-09", "organization": "OpenAI"},
         ]
     },
     {
@@ -150,8 +139,6 @@ SAMPLE_DATASETS: List[Dict] = [
             {"model": "Llama 3.1 70B", "score": 0.93, "version": "instruct", "organization": "Meta"},
             {"model": "DistilBERT", "score": 0.92, "version": "base-uncased", "organization": "HuggingFace"},
             {"model": "ALBERT", "score": 0.94, "version": "base-v2", "organization": "Google"},
-            {"model": "Gemini 1.5 Flash", "score": 0.91, "version": "001", "organization": "Google"},
-            {"model": "Mistral Large", "score": 0.93, "version": "latest", "organization": "Mistral AI"},
         ]
     },
     {
@@ -181,9 +168,6 @@ SAMPLE_DATASETS: List[Dict] = [
             {"model": "Llama 3.1 70B", "score": 0.48, "version": "instruct", "organization": "Meta"},
             {"model": "GPT-3.5 Turbo", "score": 0.42, "version": "0125", "organization": "OpenAI"},
             {"model": "Gemini 1.5 Pro", "score": 0.55, "version": "001", "organization": "Google"},
-            {"model": "Llama 3.1 405B", "score": 0.54, "version": "instruct", "organization": "Meta"},
-            {"model": "Claude 3 Opus", "score": 0.60, "version": "2024-02-29", "organization": "Anthropic"},
-            {"model": "Mistral Large", "score": 0.52, "version": "latest", "organization": "Mistral AI"},
         ]
     }
 ]
