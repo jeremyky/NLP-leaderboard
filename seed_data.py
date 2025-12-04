@@ -49,9 +49,17 @@ SAMPLE_DATASETS: List[Dict] = [
         "baseline_models": [
             {"model": "GPT-4o", "score": 0.95, "version": "2024-11-01", "organization": "OpenAI"},
             {"model": "Claude 3.5 Sonnet", "score": 0.93, "version": "2024-10-22", "organization": "Anthropic"},
-            {"model": "Llama 3.1 70B", "score": 0.91, "version": "instruct", "organization": "Meta"},
             {"model": "Gemini 1.5 Pro", "score": 0.92, "version": "001", "organization": "Google"},
+            {"model": "Llama 3.1 70B", "score": 0.91, "version": "instruct", "organization": "Meta"},
+            {"model": "Mistral Large 2", "score": 0.90, "version": "2407", "organization": "Mistral AI"},
+            {"model": "Qwen 2.5 72B", "score": 0.89, "version": "instruct", "organization": "Alibaba"},
             {"model": "GPT-3.5 Turbo", "score": 0.88, "version": "0125", "organization": "OpenAI"},
+            {"model": "Claude 3 Haiku", "score": 0.87, "version": "20240307", "organization": "Anthropic"},
+            {"model": "Llama 3.1 8B", "score": 0.86, "version": "instruct", "organization": "Meta"},
+            {"model": "Phi-3 Medium", "score": 0.85, "version": "4k-instruct", "organization": "Microsoft"},
+            {"model": "DeBERTa v3 Large", "score": 0.84, "version": "large", "organization": "Microsoft"},
+            {"model": "ALBERT XXL", "score": 0.83, "version": "v2", "organization": "Google"},
+            {"model": "DistilBERT", "score": 0.80, "version": "base-uncased", "organization": "Hugging Face"},
         ]
     },
     {
@@ -78,9 +86,16 @@ SAMPLE_DATASETS: List[Dict] = [
         "baseline_models": [
             {"model": "GPT-4o", "score": 0.97, "version": "2024-11-01", "organization": "OpenAI"},
             {"model": "Claude 3.5 Sonnet", "score": 0.96, "version": "2024-10-22", "organization": "Anthropic"},
+            {"model": "Gemini 1.5 Pro", "score": 0.95, "version": "001", "organization": "Google"},
+            {"model": "RoBERTa-large", "score": 0.945, "version": "base", "organization": "Meta"},
             {"model": "Llama 3.1 70B", "score": 0.94, "version": "instruct", "organization": "Meta"},
-            {"model": "BERT-base", "score": 0.93, "version": "uncased", "organization": "Google"},
-            {"model": "RoBERTa-base", "score": 0.94, "version": "base", "organization": "Meta"},
+            {"model": "DeBERTa v3 Large", "score": 0.938, "version": "large", "organization": "Microsoft"},
+            {"model": "BERT-large", "score": 0.93, "version": "uncased", "organization": "Google"},
+            {"model": "Mistral Large 2", "score": 0.92, "version": "2407", "organization": "Mistral AI"},
+            {"model": "ELECTRA Large", "score": 0.915, "version": "discriminator", "organization": "Google"},
+            {"model": "Claude 3 Haiku", "score": 0.91, "version": "20240307", "organization": "Anthropic"},
+            {"model": "Qwen 2.5 72B", "score": 0.90, "version": "instruct", "organization": "Alibaba"},
+            {"model": "ALBERT XXL", "score": 0.895, "version": "v2", "organization": "Google"},
         ]
     },
     {
@@ -106,10 +121,17 @@ SAMPLE_DATASETS: List[Dict] = [
         ],
         "baseline_models": [
             {"model": "GPT-4o", "score": 0.89, "version": "2024-11-01", "organization": "OpenAI"},
-            {"model": "Claude 3.5 Sonnet", "score": 0.87, "version": "2024-10-22", "organization": "Anthropic"},
-            {"model": "Llama 3.1 70B", "score": 0.84, "version": "instruct", "organization": "Meta"},
-            {"model": "BERT-large", "score": 0.86, "version": "uncased", "organization": "Google"},
             {"model": "RoBERTa-large", "score": 0.88, "version": "large", "organization": "Meta"},
+            {"model": "Claude 3.5 Sonnet", "score": 0.87, "version": "2024-10-22", "organization": "Anthropic"},
+            {"model": "BERT-large", "score": 0.86, "version": "uncased", "organization": "Google"},
+            {"model": "DeBERTa v3 Large", "score": 0.855, "version": "large", "organization": "Microsoft"},
+            {"model": "Gemini 1.5 Pro", "score": 0.85, "version": "001", "organization": "Google"},
+            {"model": "Llama 3.1 70B", "score": 0.84, "version": "instruct", "organization": "Meta"},
+            {"model": "ELECTRA Large", "score": 0.835, "version": "discriminator", "organization": "Google"},
+            {"model": "Mistral Large 2", "score": 0.83, "version": "2407", "organization": "Mistral AI"},
+            {"model": "ALBERT XXL", "score": 0.82, "version": "v2", "organization": "Google"},
+            {"model": "Qwen 2.5 72B", "score": 0.81, "version": "instruct", "organization": "Alibaba"},
+            {"model": "SpanBERT Large", "score": 0.80, "version": "cased", "organization": "Facebook AI"},
         ]
     },
     {

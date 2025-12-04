@@ -51,9 +51,15 @@ MULTILINGUAL_DATASETS: List[Dict] = [
             {"model": "GPT-4o", "score": 0.89, "version": "2024-11-01", "organization": "OpenAI"},
             {"model": "Claude 3.5 Sonnet", "score": 0.87, "version": "2024-10-22", "organization": "Anthropic"},
             {"model": "Gemini 1.5 Pro", "score": 0.86, "version": "001", "organization": "Google"},
-            {"model": "mBERT", "score": 0.81, "version": "multilingual-base", "organization": "Google"},
-            {"model": "XLM-RoBERTa", "score": 0.84, "version": "large", "organization": "Meta"},
+            {"model": "XLM-RoBERTa Large", "score": 0.85, "version": "large", "organization": "Meta"},
+            {"model": "mT5 XXL", "score": 0.84, "version": "xxl", "organization": "Google"},
+            {"model": "Mistral Large 2", "score": 0.83, "version": "2407", "organization": "Mistral AI"},
             {"model": "Llama 3.1 70B", "score": 0.82, "version": "instruct", "organization": "Meta"},
+            {"model": "mBERT", "score": 0.81, "version": "multilingual-base", "organization": "Google"},
+            {"model": "Qwen 2.5 72B", "score": 0.80, "version": "instruct", "organization": "Alibaba"},
+            {"model": "BLOOM 176B", "score": 0.79, "version": "176b", "organization": "BigScience"},
+            {"model": "mDeBERTa v3", "score": 0.78, "version": "base", "organization": "Microsoft"},
+            {"model": "XLM-V", "score": 0.77, "version": "base", "organization": "Meta"},
         ]
     },
     {
