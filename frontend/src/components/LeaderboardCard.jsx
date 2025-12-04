@@ -289,9 +289,13 @@ const LeaderboardCard = ({ leaderboard, compact = false }) => {
               leaderboard.entries.slice(0, 5).map((entry, index) => (
                 <div
                   key={entry.submission_id}
-                  className={`grid grid-cols-5 text-center px-4 py-3 bg-gray-900/70 text-white border-b border-white/5 last:rounded-b-xl last:border-b-0 ${
-                    index % 2 === 0 ? 'bg-opacity-100' : 'bg-opacity-90'
-                  } hover:bg-gray-800`}
+                  className={`grid grid-cols-5 text-center px-4 py-3 text-white border-b border-white/5 last:rounded-b-xl last:border-b-0 hover:bg-gray-800 ${
+                    !entry.is_internal 
+                      ? 'bg-purple-900/30 border-l-4 border-l-purple-500' 
+                      : index % 2 === 0 
+                      ? 'bg-gray-900/70 bg-opacity-100' 
+                      : 'bg-gray-900/70 bg-opacity-90'
+                  }`}
                 >
                   <div className="flex items-center justify-center">
                     {entry.rank <= 3 ? (
@@ -367,10 +371,47 @@ const LeaderboardCard = ({ leaderboard, compact = false }) => {
             )}
           </div>
 
+          {/* External submissions below top 5 */}
+          {(() => {
+            const externalNotInTop5 = leaderboard.entries
+              .filter(e => !e.is_internal && e.rank > 5);
+            
+            if (externalNotInTop5.length > 0) {
+              return (
+                <div className="mt-4 p-4 bg-purple-900/20 border border-purple-700/50 rounded-xl">
+                  <h4 className="text-sm font-semibold text-purple-300 mb-3 flex items-center">
+                    <span className="mr-2">🆕</span>
+                    Recent External Submissions
+                  </h4>
+                  <div className="space-y-2">
+                    {externalNotInTop5.slice(0, 3).map((entry) => (
+                      <div
+                        key={entry.submission_id}
+                        className="flex items-center justify-between px-3 py-2 bg-gray-900/50 rounded-lg text-sm"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <span className="text-gray-400 font-mono text-xs">#{entry.rank}</span>
+                          <span className="text-white font-medium">{entry.model_name}</span>
+                        </div>
+                        <span className="text-emerald-400 font-mono">{entry.score.toFixed(4)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
+
           {leaderboard.entries.length > 5 && (
             <div className="mt-3 flex flex-col md:flex-row md:items-center md:justify-between text-xs text-gray-400 space-y-2 md:space-y-0">
               <span>
                 Showing top {Math.min(5, leaderboard.entries.length)} of {leaderboard.entries.length} submissions
+                {leaderboard.entries.filter(e => !e.is_internal).length > 0 && (
+                  <span className="ml-2 text-purple-400">
+                    ({leaderboard.entries.filter(e => !e.is_internal).length} external)
+                  </span>
+                )}
               </span>
               <button
                 type="button"
