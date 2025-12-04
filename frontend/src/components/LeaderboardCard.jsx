@@ -12,6 +12,51 @@ const LeaderboardCard = ({ leaderboard }) => {
   const [selectedModel, setSelectedModel] = useState(null);
   const [comparisonModels, setComparisonModels] = useState([]); // side-by-side comparison
 
+  const getDatasetIcon = (name) => {
+    const n = name.toLowerCase();
+    if (n.includes('multilingual') || n.includes('xnli') || n.includes('xquad') || n.includes('mgsm')) {
+      return '🌐';
+    }
+    if (n.includes('financial') || n.includes('fiqa') || n.includes('finqa') || n.includes('finance')) {
+      return '💸';
+    }
+    if (n.includes('news') || n.includes('ag news')) {
+      return '📰';
+    }
+    if (n.includes('sentiment') || n.includes('imdb') || n.includes('sst')) {
+      return '🎬';
+    }
+    if (n.includes('squad') || n.includes('qa')) {
+      return '📚';
+    }
+    if (n.includes('gsm') || n.includes('math')) {
+      return '🧮';
+    }
+    if (n.includes('truthful') || n.includes('toxicity') || n.includes('safety')) {
+      return '🧠';
+    }
+    if (n.includes('code') || n.includes('humaneval') || n.includes('mbpp')) {
+      return '💻';
+    }
+    return '📊';
+  };
+
+  const headerGradientClass = (() => {
+    switch (leaderboard.task_type) {
+      case 'text_classification':
+        return 'from-indigo-600/40 via-blue-600/40 to-sky-500/30';
+      case 'document_qa':
+      case 'line_qa':
+        return 'from-emerald-600/40 via-teal-500/40 to-cyan-500/30';
+      case 'named_entity_recognition':
+        return 'from-pink-600/40 via-rose-500/40 to-orange-500/30';
+      case 'retrieval':
+        return 'from-amber-500/40 via-yellow-400/40 to-lime-400/30';
+      default:
+        return 'from-slate-600/40 via-slate-500/40 to-slate-400/30';
+    }
+  })();
+
   const toggleCompare = (entry) => {
     setComparisonModels((prev) => {
       const exists = prev.find((e) => e.submission_id === entry.submission_id);
@@ -53,99 +98,165 @@ const LeaderboardCard = ({ leaderboard }) => {
 
   return (
     <>
-      <div className="w-full p-4 bg-gray-950 rounded-lg shadow-lg card-hover">
-        <div className="flex justify-between items-center mb-4">
+      <div className="w-full p-4 bg-gray-950/95 rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.35)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.7)] border border-gray-800/70 hover:border-gray-700 transition-transform duration-150 hover:-translate-y-0.5">
+        {/* Header with subtle gradient banner */}
+        <div className={`mb-4 rounded-xl bg-gradient-to-r ${headerGradientClass} p-4 flex flex-col md:flex-row md:items-center md:justify-between`}>
           <div>
-            <h2 className="text-xl font-bold text-white">{leaderboard.dataset_name}</h2>
-            <div className="flex items-center space-x-2 mt-1">
-              <p className="text-sm text-gray-400">
+            <h2 className="text-xl font-bold text-white flex items-center space-x-2">
+              <span className="text-xl">
+                {getDatasetIcon(leaderboard.dataset_name)}
+              </span>
+              <span>{leaderboard.dataset_name}</span>
+            </h2>
+            <div className="flex items-center flex-wrap gap-2 mt-2 text-xs md:text-sm">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-black/30 text-gray-100">
+                <span className="mr-1">📂</span>
                 {leaderboard.task_type.replace('_', ' ').toUpperCase()}
-              </p>
-              <span className="text-gray-600">|</span>
+              </span>
               <button
                 onClick={() => setShowMetricInfo(true)}
-                className="text-sm text-blue-400 hover:text-blue-300 underline cursor-pointer flex items-center space-x-1"
+                className="inline-flex items-center px-2 py-0.5 rounded-full bg-black/25 text-blue-100 hover:text-white hover:bg-black/40 text-xs cursor-pointer transition-colors"
                 title="Click to learn about this metric"
               >
-                <span>Metric: {leaderboard.primary_metric}</span>
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
+                <span className="mr-1">📊 Metric:</span>
+                <span className="font-semibold">{leaderboard.primary_metric}</span>
               </button>
             </div>
           </div>
-        <div className="flex items-center space-x-2">
-          {leaderboard.url && (
-            <a
-              href={leaderboard.url}
-              className="text-blue-400 hover:text-blue-500 text-sm underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View Dataset
-            </a>
-          )}
-          
-          {/* View Toggle */}
-          <div className="flex bg-gray-800 rounded">
-            <button
-              onClick={() => setViewMode('simple')}
-              className={`px-3 py-1 text-xs rounded-l ${viewMode === 'simple' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}
-            >
-              Simple
-            </button>
-            <button
-              onClick={() => setViewMode('detailed')}
-              className={`px-3 py-1 text-xs rounded-r ${viewMode === 'detailed' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}
-            >
-              All Metrics
-            </button>
+          <div className="mt-3 md:mt-0 flex items-center space-x-3">
+            {leaderboard.url && (
+              <a
+                href={leaderboard.url}
+                className="inline-flex items-center px-3 py-1.5 bg-black/30 hover:bg-black/40 text-sm text-blue-100 hover:text-white rounded-full border border-white/10 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span className="mr-1">🔗</span>
+                View Dataset
+              </a>
+            )}
+            
+            {/* View Toggle */}
+            <div className="flex bg-black/30 rounded-full border border-white/10 overflow-hidden text-xs">
+              <button
+                onClick={() => setViewMode('simple')}
+                className={`px-3 py-1 flex items-center space-x-1 ${
+                  viewMode === 'simple'
+                    ? 'bg-white/20 text-white'
+                    : 'text-gray-200 hover:bg-white/10'
+                }`}
+              >
+                <span className="text-xs">📈</span>
+                <span>Simple</span>
+              </button>
+              <button
+                onClick={() => setViewMode('detailed')}
+                className={`px-3 py-1 flex items-center space-x-1 ${
+                  viewMode === 'detailed'
+                    ? 'bg-white/20 text-white'
+                    : 'text-gray-200 hover:bg-white/10'
+                }`}
+              >
+                <span className="text-xs">📊</span>
+                <span>All Metrics</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
       
       {viewMode === 'simple' ? (
         <>
-          <div className="grid grid-cols-5 text-white font-bold text-center bg-gray-900 p-4 rounded-t-lg">
-            <div>Rank</div>
-            <div>Model</div>
-            <div>Score</div>
-            <div>Last Updated</div>
-            <div>Compare</div>
+          <div className="grid grid-cols-5 text-white font-semibold text-center bg-gray-900/80 p-3 rounded-t-xl border-b border-white/5 text-xs md:text-sm tracking-wide">
+            <div className="flex items-center justify-center space-x-1">
+              <span>🏆</span>
+              <span>Rank</span>
+            </div>
+            <div className="flex items-center justify-center space-x-1">
+              <span>🤖</span>
+              <span>Model</span>
+            </div>
+            <div className="flex items-center justify-center space-x-1">
+              <span>📊</span>
+              <span>Score</span>
+            </div>
+            <div className="flex items-center justify-center space-x-1">
+              <span>⏱</span>
+              <span>Last Updated</span>
+            </div>
+            <div className="flex items-center justify-center space-x-1">
+              <span>🔍</span>
+              <span>Compare</span>
+            </div>
           </div>
       
           <div>
             {leaderboard.entries.length === 0 ? (
-              <div className="text-center p-8 text-gray-400">
+              <div className="text-center p-8 text-gray-400 bg-gray-900/70 rounded-b-xl border border-t-0 border-gray-800/80">
                 No submissions yet
               </div>
             ) : (
               leaderboard.entries.slice(0, 5).map((entry, index) => (
                 <div
                   key={entry.submission_id}
-                  className={`grid grid-cols-5 text-center p-4 ${
-                    index % 2 === 0 ? 'bg-gray-700 text-white' : 'bg-gray-800 text-white'
-                  } hover:bg-gray-600`}
+                  className={`grid grid-cols-5 text-center px-4 py-3 bg-gray-900/70 text-white border-b border-white/5 last:rounded-b-xl last:border-b-0 ${
+                    index % 2 === 0 ? 'bg-opacity-100' : 'bg-opacity-90'
+                  } hover:bg-gray-800`}
                 >
                   <div className="flex items-center justify-center">
-                    {entry.rank <= 3 && (
-                      <span className={`mr-2 text-lg font-bold ${
-                        entry.rank === 1 ? 'text-yellow-400' : 
-                        entry.rank === 2 ? 'text-gray-300' : 
-                        'text-amber-600'
-                      }`}>
-                        {entry.rank === 1 ? '1st' : entry.rank === 2 ? '2nd' : '3rd'}
+                    {entry.rank <= 3 ? (
+                      <span
+                        className={`px-2 py-1 rounded-lg text-xs font-semibold inline-flex items-center space-x-1 ${
+                          entry.rank === 1
+                            ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/40'
+                            : entry.rank === 2
+                            ? 'bg-gray-300/20 text-gray-200 border border-gray-300/40'
+                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                        }`}
+                      >
+                        <span>
+                          {entry.rank === 1
+                            ? '🥇'
+                            : entry.rank === 2
+                            ? '🥈'
+                            : '🥉'}
+                        </span>
+                        <span>{entry.rank === 1 ? '1st' : entry.rank === 2 ? '2nd' : '3rd'}</span>
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 rounded-lg text-xs bg-gray-800 text-gray-200 border border-gray-700">
+                        #{entry.rank}
                       </span>
                     )}
-                    {entry.rank > 3 && <span>{entry.rank}</span>}
                   </div>
-                  <div className="flex items-center justify-center">
-                    {entry.model_name}
+                  <div
+                    className="flex items-center justify-center space-x-2"
+                    title={`${entry.model_name}${entry.is_internal ? ' • Internal' : ''}`}
+                  >
+                    <span className="truncate max-w-[9rem] md:max-w-[12rem]">
+                      {entry.model_name}
+                    </span>
                     {entry.is_internal && (
-                      <span className="ml-2 px-2 py-1 text-xs bg-blue-500 rounded">Internal</span>
+                      <span className="px-2 py-0.5 text-[10px] bg-blue-500/20 border border-blue-400/60 rounded-full text-blue-100">
+                        Internal
+                      </span>
                     )}
                   </div>
-                  <div>{entry.score.toFixed(4)}</div>
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-400"
+                        style={{
+                          width: `${Math.max(
+                            0,
+                            Math.min(1, entry.score ?? 0)
+                          ) * 100}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-mono">
+                      {entry.score.toFixed(4)}
+                    </span>
+                  </div>
                   <div className="text-sm text-gray-300">{entry.updated_at}</div>
                   <div className="flex items-center justify-center">
                     <button
