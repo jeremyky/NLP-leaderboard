@@ -44,17 +44,34 @@ class TextClassificationEvaluator(BaseEvaluator):
         
         for gt in ground_truth:
             gt_id = gt["id"]
-            true_label = gt["answer"]
+            true_label_raw = gt["answer"]
+            
+            # Normalize label to string (handle list answers with multiple acceptable labels)
+            # For lists, we'll use the first element as the "canonical" label for counting
+            if isinstance(true_label_raw, list):
+                true_label = str(true_label_raw[0]) if true_label_raw else ""
+                # Keep all acceptable answers for matching
+                acceptable_labels = [str(lbl).strip().lower() for lbl in true_label_raw]
+            else:
+                true_label = str(true_label_raw)
+                acceptable_labels = [true_label.strip().lower()]
             
             if gt_id not in pred_map:
                 continue  # Skip missing predictions
             
-            pred_label = pred_map[gt_id]
+            pred_label_raw = pred_map[gt_id]
+            # Normalize prediction to string (handle list predictions)
+            if isinstance(pred_label_raw, list):
+                pred_label = str(pred_label_raw[0]) if pred_label_raw else ""
+            else:
+                pred_label = str(pred_label_raw)
+            
             total += 1
             class_total[true_label] += 1
             class_pred_total[pred_label] += 1
             
-            if str(pred_label).strip().lower() == str(true_label).strip().lower():
+            # Check if prediction matches any acceptable answer
+            if pred_label.strip().lower() in acceptable_labels:
                 correct += 1
                 class_correct[true_label] += 1
         

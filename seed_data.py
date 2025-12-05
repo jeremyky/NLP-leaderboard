@@ -208,6 +208,10 @@ def create_baseline_predictions(ground_truth, score):
     """
     Generate predictions based on desired accuracy score
     For simplicity, just make first N% correct
+    
+    Handles different answer formats:
+    - Strings (text classification, QA)
+    - Lists (NER entities, retrieval doc IDs, multiple acceptable answers)
     """
     predictions = []
     total = len(ground_truth)
@@ -215,14 +219,27 @@ def create_baseline_predictions(ground_truth, score):
     
     for i, gt in enumerate(ground_truth):
         if i < correct_count:
-            # Correct prediction
+            # Correct prediction - copy the answer as-is
             predictions.append({
                 "id": gt["id"],
                 "prediction": gt["answer"]
             })
         else:
-            # Wrong prediction (just use a dummy wrong answer)
-            wrong_answer = "WRONG_ANSWER" if gt["answer"] != "WRONG_ANSWER" else "INCORRECT"
+            # Wrong prediction - generate appropriate wrong answer based on type
+            answer = gt["answer"]
+            
+            if isinstance(answer, list):
+                # For list answers (NER, retrieval, multiple choice)
+                if answer and isinstance(answer[0], (list, tuple)):
+                    # NER format: [["entity", "type"], ...]
+                    wrong_answer = [["WRONG_ENTITY", "WRONG_TYPE"]]
+                else:
+                    # Simple list format (retrieval doc IDs, multiple answers)
+                    wrong_answer = ["WRONG_ANSWER"]
+            else:
+                # String answer (text classification, QA)
+                wrong_answer = "WRONG_ANSWER" if answer != "WRONG_ANSWER" else "INCORRECT"
+            
             predictions.append({
                 "id": gt["id"],
                 "prediction": wrong_answer
