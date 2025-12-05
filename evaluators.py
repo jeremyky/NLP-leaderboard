@@ -240,7 +240,25 @@ class QAEvaluator(BaseEvaluator):
     
     @staticmethod
     def normalize_answer(answer: str) -> str:
-        """Normalize answer for comparison"""
+        """Normalize answer for comparison.
+
+        This is intentionally defensive because some seeders and user
+        submissions may provide:
+          - a single string answer
+          - a list of possible answers
+          - other JSON-serialised structures
+
+        We coerce lists to their first element and everything else to str
+        before applying text normalization.
+        """
+        # If we received a list (e.g. multiple-choice answers), pick first.
+        if isinstance(answer, list):
+            answer = answer[0] if answer else ""
+
+        # Coerce non-string values to string representation
+        if not isinstance(answer, str):
+            answer = str(answer)
+
         answer = answer.lower()
         answer = re.sub(r'\b(a|an|the)\b', ' ', answer)
         answer = re.sub(r'[^\w\s]', '', answer)
