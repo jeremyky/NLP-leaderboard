@@ -359,8 +359,22 @@ class QAEvaluator(BaseEvaluator):
                 continue
             
             pred_answer = pred_map[gt_id]
+
+            # Normalise both prediction and ground truth into simple strings
+            # before measuring length. This mirrors `normalize_answer`'s
+            # handling of list / non-string values but keeps original casing.
+            if isinstance(pred_answer, list):
+                pred_answer = pred_answer[0] if pred_answer else ""
+            if not isinstance(pred_answer, str):
+                pred_answer = str(pred_answer)
+
+            if isinstance(true_answer, list):
+                true_answer = true_answer[0] if true_answer else ""
+            if not isinstance(true_answer, str):
+                true_answer = str(true_answer)
+
             pred_len = len(pred_answer.split())
-            true_len = len(str(true_answer).split())
+            true_len = len(true_answer.split())
             
             if true_len > 0:
                 ratio = pred_len / true_len
