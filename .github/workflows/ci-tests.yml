@@ -1,0 +1,294 @@
+name: CI - Automated Tests
+
+# Run on all pushes and PRs to main branch
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  test-api-endpoints:
+    name: API Endpoint Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run API endpoint tests
+      run: |
+        pytest tests/test_api_endpoints.py -v --tb=short
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-test-results
+        path: |
+          .pytest_cache/
+          pytest-report.xml
+
+  test-leaderboard-integrity:
+    name: Leaderboard Integrity Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run leaderboard integrity tests
+      run: |
+        pytest tests/test_leaderboard_integrity.py -v --tb=short
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: leaderboard-integrity-results
+        path: |
+          .pytest_cache/
+
+  test-evaluators:
+    name: Evaluator Tests (All Task Types)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test all evaluators by task type
+      run: |
+        pytest tests/test_evaluators_by_task.py -v --tb=short
+    
+    - name: Test internal evaluations
+      run: |
+        pytest tests/test_internal_evaluations.py -v --tb=short
+
+  test-submission-pipeline:
+    name: Submission Pipeline Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test submission and evaluation pipeline
+      run: |
+        pytest tests/test_submission_pipeline.py -v --tb=short
+
+  test-metrics-api:
+    name: Metrics API Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test metrics information API
+      run: |
+        pytest tests/test_metrics_api.py -v --tb=short
+
+  test-dataset-specific:
+    name: Dataset-Specific Tests (AG News, SQuAD, SST-2, XNLI)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test AG News dataset
+      run: |
+        pytest tests/dataset_tests/test_dataset_ag_news.py -v --tb=short
+    
+    - name: Test SST-2 dataset
+      run: |
+        pytest tests/dataset_tests/test_dataset_sst2.py -v --tb=short
+    
+    - name: Test SQuAD dataset
+      run: |
+        pytest tests/dataset_tests/test_dataset_squad.py -v --tb=short
+    
+    - name: Test XNLI dataset
+      run: |
+        pytest tests/dataset_tests/test_dataset_xnli.py -v --tb=short
+
+  test-database-seeding:
+    name: Database Seeding Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test general data seeding
+      run: |
+        python -c "from seed_data import seed_database; seed_database()"
+    
+    - name: Test finance data seeding
+      run: |
+        python -c "from finance_datasets import seed_finance_datasets; seed_finance_datasets()"
+    
+    - name: Test multilingual data seeding
+      run: |
+        python -c "from multilingual_datasets import seed_multilingual_datasets; seed_multilingual_datasets()"
+    
+    - name: Test science data seeding
+      run: |
+        python -c "from science_datasets import seed_science_datasets; seed_science_datasets()"
+    
+    - name: Test missing baselines seeding
+      run: |
+        python seed_missing_baselines.py
+    
+    - name: Verify database populated
+      run: |
+        python -c "
+from database import SessionLocal, init_db
+from models import Dataset, Submission
+init_db()
+db = SessionLocal()
+dataset_count = db.query(Dataset).count()
+submission_count = db.query(Submission).count()
+print(f'Datasets: {dataset_count}, Submissions: {submission_count}')
+assert dataset_count >= 15, f'Too few datasets: {dataset_count}'
+assert submission_count >= 100, f'Too few submissions: {submission_count}'
+db.close()
+"
+
+  test-huggingface-import:
+    name: HuggingFace Import Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test HuggingFace dataset import
+      run: |
+        pytest tests/test_hf_import.py -v --tb=short
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: 
+      - test-api-endpoints
+      - test-leaderboard-integrity
+      - test-evaluators
+      - test-submission-pipeline
+      - test-metrics-api
+      - test-dataset-specific
+      - test-database-seeding
+      - test-huggingface-import
+    if: always()
+    
+    steps:
+    - name: Check test results
+      run: |
+        echo "All test suites completed"
+        echo "API Endpoints: ${{ needs.test-api-endpoints.result }}"
+        echo "Leaderboard Integrity: ${{ needs.test-leaderboard-integrity.result }}"
+        echo "Evaluators: ${{ needs.test-evaluators.result }}"
+        echo "Submission Pipeline: ${{ needs.test-submission-pipeline.result }}"
+        echo "Metrics API: ${{ needs.test-metrics-api.result }}"
+        echo "Dataset Tests: ${{ needs.test-dataset-specific.result }}"
+        echo "Database Seeding: ${{ needs.test-database-seeding.result }}"
+        echo "HuggingFace Import: ${{ needs.test-huggingface-import.result }}"
+

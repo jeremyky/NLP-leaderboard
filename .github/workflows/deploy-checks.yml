@@ -28,6 +28,20 @@ jobs:
         pytest tests/test_evaluators_by_task.py -v
         pytest tests/test_internal_evaluations.py -v
         pytest tests/test_hf_import.py -v
+        pytest tests/test_metrics_api.py -v
+        pytest tests/test_submission_pipeline.py -v
+    
+    - name: Run API endpoint tests
+      run: |
+        pytest tests/test_api_endpoints.py -v --tb=short
+    
+    - name: Run leaderboard integrity tests
+      run: |
+        pytest tests/test_leaderboard_integrity.py -v --tb=short
+    
+    - name: Run complete workflow tests
+      run: |
+        pytest tests/test_complete_workflows.py -v --tb=short
     
     - name: Test database seeding
       run: |
