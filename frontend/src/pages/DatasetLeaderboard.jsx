@@ -50,7 +50,7 @@ const DatasetLeaderboard = () => {
             <p>{error}</p>
           </div>
         ) : leaderboard ? (
-          <LeaderboardCard leaderboard={leaderboard} />
+          <LeaderboardCard leaderboard={leaderboard} showAll={true} />
         ) : null}
       </div>
     </div>

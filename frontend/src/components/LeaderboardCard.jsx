@@ -5,7 +5,7 @@ import MultiMetricLeaderboard from './MultiMetricLeaderboard';
 import ModelInsights from './ModelInsights';
 import LanguageBreakdown from './LanguageBreakdown';
 
-const LeaderboardCard = ({ leaderboard, compact = false }) => {
+const LeaderboardCard = ({ leaderboard, compact = false, showAll = false }) => {
   const navigate = useNavigate();
   const [showMetricInfo, setShowMetricInfo] = useState(false);
   const [viewMode, setViewMode] = useState('simple'); // 'simple' or 'detailed'
@@ -308,7 +308,7 @@ const LeaderboardCard = ({ leaderboard, compact = false }) => {
                 No submissions yet
               </div>
             ) : (
-              leaderboard.entries.slice(0, 5).map((entry, index) => (
+              (showAll ? leaderboard.entries : leaderboard.entries.slice(0, 5)).map((entry, index) => (
                 <div
                   key={entry.submission_id}
                   className={`grid grid-cols-5 text-center px-4 py-3 text-white border-b border-white/5 last:rounded-b-xl last:border-b-0 hover:bg-gray-800 ${
@@ -425,7 +425,7 @@ const LeaderboardCard = ({ leaderboard, compact = false }) => {
             return null;
           })()}
 
-          {leaderboard.entries.length > 5 && (
+          {leaderboard.entries.length > 5 && !showAll && (
             <div className="mt-3 flex flex-col md:flex-row md:items-center md:justify-between text-xs text-gray-400 space-y-2 md:space-y-0">
               <span>
                 Showing top {Math.min(5, leaderboard.entries.length)} of {leaderboard.entries.length} submissions
@@ -442,6 +442,17 @@ const LeaderboardCard = ({ leaderboard, compact = false }) => {
               >
                 View full leaderboard →
               </button>
+            </div>
+          )}
+          
+          {showAll && leaderboard.entries.length > 0 && (
+            <div className="mt-3 text-xs text-gray-400">
+              Showing all {leaderboard.entries.length} submissions
+              {leaderboard.entries.filter(e => !e.is_internal).length > 0 && (
+                <span className="ml-2 text-purple-400">
+                  ({leaderboard.entries.filter(e => !e.is_internal).length} external)
+                </span>
+              )}
             </div>
           )}
 
