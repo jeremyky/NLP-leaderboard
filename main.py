@@ -410,14 +410,14 @@ async def get_all_leaderboards(
         # This ensures that newly imported benchmarks (e.g., from HuggingFace)
         # are visible in the frontend and can show "0 models" instead of
         # being entirely hidden.
-            leaderboards.append(LeaderboardResponse(
-                dataset_id=dataset.id,
-                dataset_name=dataset.name,
-                task_type=dataset.task_type.value,
-                url=dataset.url,
-                primary_metric=dataset.primary_metric,
+        leaderboards.append(LeaderboardResponse(
+            dataset_id=dataset.id,
+            dataset_name=dataset.name,
+            task_type=dataset.task_type.value,
+            url=dataset.url,
+            primary_metric=dataset.primary_metric,
             entries=entries,
-            ))
+        ))
     
     return leaderboards
 
