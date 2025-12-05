@@ -20,14 +20,10 @@ client = TestClient(app)
 
 
 @pytest.fixture(scope="function")
-def clean_db():
+def db_session(clean_db):
     """Start with clean database"""
-    init_db()
     db = SessionLocal()
     try:
-        db.query(Submission).delete()
-        db.query(Dataset).delete()
-        db.commit()
         yield db
     finally:
         db.close()
@@ -36,7 +32,7 @@ def clean_db():
 class TestCompleteUserJourney:
     """Test complete user workflows"""
     
-    def test_create_dataset_and_submit_multiple_models(self, clean_db):
+    def test_create_dataset_and_submit_multiple_models(self, db_session):
         """
         Complete workflow:
         1. Create custom dataset
@@ -171,7 +167,7 @@ class TestCompleteUserJourney:
 class TestQAWorkflow:
     """Test question answering workflow"""
     
-    def test_document_qa_submission(self, clean_db):
+    def test_document_qa_submission(self, db_session):
         """Test QA dataset creation and submission"""
         # Create QA dataset
         dataset_payload = {
@@ -225,7 +221,7 @@ class TestQAWorkflow:
 class TestMultipleDatasetTypes:
     """Test handling of different task types simultaneously"""
     
-    def test_mixed_task_types_in_leaderboard(self, clean_db):
+    def test_mixed_task_types_in_leaderboard(self, db_session):
         """Create datasets of different types and verify leaderboard handles them"""
         datasets = [
             {
@@ -283,7 +279,7 @@ class TestMultipleDatasetTypes:
 class TestEdgeCases:
     """Test edge cases and error handling"""
     
-    def test_empty_predictions_rejected(self, clean_db):
+    def test_empty_predictions_rejected(self, db_session):
         """Should reject submission with no predictions"""
         # Create dataset first
         dataset_payload = {
@@ -311,7 +307,7 @@ class TestEdgeCases:
         # Accept either rejection or acceptance (will fail evaluation later)
         assert response.status_code in [202, 400, 422]
     
-    def test_dataset_with_no_submissions_appears_in_leaderboard(self, clean_db):
+    def test_dataset_with_no_submissions_appears_in_leaderboard(self, db_session):
         """Empty datasets should still appear in leaderboard (with 0 models)"""
         # Create dataset
         dataset_payload = {
@@ -345,7 +341,7 @@ class TestEdgeCases:
 class TestPerformanceAndScalability:
     """Test system handles reasonable load"""
     
-    def test_leaderboard_with_many_submissions(self, clean_db):
+    def test_leaderboard_with_many_submissions(self, db_session):
         """Test leaderboard handles 50+ submissions per dataset"""
         # Create dataset
         dataset_payload = {
@@ -366,7 +362,7 @@ class TestPerformanceAndScalability:
         dataset_id = create_response.json()["data"]["dataset_id"]
         
         # Create 20 submissions directly in DB (faster than API)
-        db = clean_db
+        db = db_session
         for i in range(20):
             submission = Submission(
                 id=str(uuid.uuid4()),
@@ -408,7 +404,7 @@ class TestPerformanceAndScalability:
 class TestMetricsConsistency:
     """Test metrics are computed consistently"""
     
-    def test_primary_score_matches_detailed_scores(self, clean_db):
+    def test_primary_score_matches_detailed_scores(self, db_session):
         """Primary score should match the score in detailed_scores"""
         # Create dataset
         dataset_payload = {
@@ -460,7 +456,7 @@ class TestMetricsConsistency:
 class TestDatasetUpload:
     """Test dataset upload and validation"""
     
-    def test_upload_valid_text_classification_dataset(self, clean_db):
+    def test_upload_valid_text_classification_dataset(self, db_session):
         """Should accept valid text classification dataset"""
         dataset = {
             "name": f"Upload Test {uuid.uuid4()}",
@@ -487,7 +483,7 @@ class TestDatasetUpload:
         dataset_names = [d["name"] for d in list_response.json()]
         assert dataset["name"] in dataset_names
     
-    def test_upload_valid_qa_dataset(self, clean_db):
+    def test_upload_valid_qa_dataset(self, db_session):
         """Should accept valid QA dataset"""
         dataset = {
             "name": f"QA Upload {uuid.uuid4()}",
@@ -505,7 +501,7 @@ class TestDatasetUpload:
         response = client.post("/api/datasets", json=dataset)
         assert response.status_code == 201
     
-    def test_upload_valid_ner_dataset(self, clean_db):
+    def test_upload_valid_ner_dataset(self, db_session):
         """Should accept valid NER dataset"""
         dataset = {
             "name": f"NER Upload {uuid.uuid4()}",
@@ -527,7 +523,7 @@ class TestDatasetUpload:
 class TestModelUpload:
     """Test model/prediction upload workflows"""
     
-    def test_upload_predictions_json(self, clean_db):
+    def test_upload_predictions_json(self, db_session):
         """Test uploading predictions as JSON (common user flow)"""
         # Create dataset
         dataset_payload = {

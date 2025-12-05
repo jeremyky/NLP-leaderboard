@@ -31,7 +31,7 @@ jobs:
     
     - name: Run API endpoint tests
       run: |
-        pytest tests/test_api_endpoints.py -v --tb=short
+        pytest tests/test_api_endpoints.py -v --tb=short || (echo "⚠️  Some API endpoint tests failed" && exit 1)
     
     - name: Upload test results
       if: always()

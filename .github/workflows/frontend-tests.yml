@@ -35,7 +35,12 @@ jobs:
     
     - name: Check for linting errors
       working-directory: frontend
-      run: npm run lint || echo "No lint script configured"
+      run: |
+        if npm run lint 2>/dev/null; then
+          echo "✓ Linting passed"
+        else
+          echo "⚠️  No lint script or linting failed (non-blocking)"
+        fi
       continue-on-error: true
     
     - name: Build frontend
@@ -108,18 +113,21 @@ jobs:
     - name: Check environment config
       working-directory: frontend
       run: |
-        # Verify environment variables are used correctly
-        if grep -r "localhost:8000" src/ --exclude-dir=node_modules; then
-          echo "⚠️  Found hardcoded localhost:8000 in source"
-          exit 1
-        fi
-        
+        # Verify VITE_API_URL is used (localhost fallback is OK for dev)
         if grep -r "VITE_API_URL" src/services/api.js; then
           echo "✓ VITE_API_URL is used in api.js"
         else
           echo "⚠️  VITE_API_URL not found in api.js"
           exit 1
         fi
+        
+        # Check that localhost is only used as fallback, not hardcoded
+        if grep -r "http://localhost:8000" src/ --exclude-dir=node_modules | grep -v "VITE_API_URL.*localhost"; then
+          echo "⚠️  Found hardcoded localhost:8000 (should only be fallback)"
+          exit 1
+        fi
+        
+        echo "✓ Environment configuration is correct"
 
   test-component-imports:
     name: Validate Component Imports

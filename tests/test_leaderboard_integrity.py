@@ -19,9 +19,8 @@ client = TestClient(app)
 
 
 @pytest.fixture(scope="function")
-def db_session():
+def db_session(clean_db):
     """Create a fresh database for each test"""
-    init_db()
     db = SessionLocal()
     try:
         yield db
